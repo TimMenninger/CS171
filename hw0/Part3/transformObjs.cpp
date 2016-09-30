@@ -1,3 +1,13 @@
+/******************************************************************************
+
+ transformObjs.cpp
+
+ Reads in objects, and makes a copy for each desired transformation
+
+ Author: Tim Menninger
+
+******************************************************************************/
+
 #include "transformObjs.h"
 
 using namespace std;
@@ -25,6 +35,10 @@ void getOriginalShapes
     map<string, shape3D*>   *originals
 )
 {
+    assert(inFile);
+    assert(order);
+    assert(originals);
+
     order->clear();
     string line;
     while (getline(*inFile, line)) {
@@ -73,6 +87,10 @@ void transformShape
     shape3D     *transformed
 )
 {
+    assert(origShape);
+    assert(matrix);
+    assert(transformed);
+
     // Ensure we are starting with an empty shape
     transformed->clear();
 
@@ -125,6 +143,11 @@ int parseShapeTransforms
     map<string, vector<shape3D> >   *out
 )
 {
+    assert(filename);
+    assert(order);
+    assert(originals);
+    assert(out);
+
     // Read the file
     ifstream inFile(filename);
     if (!inFile.is_open()) {
@@ -184,6 +207,10 @@ void printShapes
     map<string, vector<shape3D> >   *transforms
 )
 {
+    assert(order);
+    assert(originals);
+    assert(transforms);
+
     // Print all of the originals, keeping a list of the order they're printed
     // to make it easier to look at.
     vector<string>::iterator it = order->begin();
@@ -223,6 +250,9 @@ void cleanupShapes
     map<string, vector<shape3D> >   *shapesVec
 )
 {
+    assert(shapes);
+    assert(shapesVec);
+
     // Delete the shapes in the shapes map
     map<string, shape3D*>::iterator it = shapes->begin();
     for (; it != shapes->end(); ++it) {

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <assert.h>
 
 
 #define FEXT_LEN        4         // Number of characters in OBJ file extension

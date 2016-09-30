@@ -8,11 +8,7 @@ using namespace std;
  Main loop to parse OBJ files and output them.  This outputs all of the read
  files to out.txt
 */
-int main
-(
-    int argc,
-    char **argv
-)
+int main (int argc, char **argv)
 {
     if (argc < 2) {
         cout << "usage: ./objParser <obj_file1.obj> ..." << endl;

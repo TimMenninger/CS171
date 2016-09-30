@@ -36,6 +36,7 @@ int parseObjFile
     shape3D         *shape
 )
 {
+    assert(shape);
     // Set the filename
     string fn(filename);
     shape->name = fn.substr(0, fn.length()-FEXT_LEN);
@@ -88,11 +89,14 @@ int parseObjFile
 
     return 0;
 }
+// Different definition for char* input instead of string
 int parseObjFile
 (
     char    *filename,
     shape3D *shape
 )
 {
+    assert(filename);
+    assert(shape);
     return parseObjFile(string(filename), shape);
 }

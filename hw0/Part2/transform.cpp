@@ -53,6 +53,9 @@ int generateMatrices
     vector<MatrixXd>    *matrices
 )
 {
+    assert(openFile);
+    assert(matrices);
+
     // The string buffer that will be read
     string line;
     // Read each line and create an element
@@ -135,6 +138,9 @@ int parseTransformFile
     vector<MatrixXd>    *matrices
 )
 {
+    assert(filename);
+    assert(matrices);
+
     // Read the file
     ifstream inFile(filename);
     if (!inFile.is_open()) {
@@ -171,6 +177,9 @@ void transformMatrix
     vector<MatrixXd>    *factors
 )
 {
+    assert(matrix);
+    assert(factors);
+    
     // Multiply by all of the matrices in the file.
     vector<MatrixXd>::reverse_iterator it = factors->rbegin();
     for (; it != factors->rend(); ++it) {
