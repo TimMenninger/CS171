@@ -6,12 +6,17 @@
 ###############################################################################
 CC = g++
 FLAGS = -g
-SOURCES = *.cpp
 
-EXENAME = objParser
+# The following line is a relative directory reference that assumes the Eigen
+# folder--which your program will depend on--is located one directory above the
+# directory that contains this Makefile.
+INCLUDE = -I../
+SOURCES = ../Part2/transform.cpp ../Part1/objParser.cpp transformObjs.cpp main.cpp
+
+EXENAME = transformObjs
 
 all: $(SOURCES)
-	$(CC) $(FLAGS) -o $(EXENAME) $(SOURCES)
+	$(CC) $(FLAGS) -o $(EXENAME) $(INCLUDE) $(SOURCES)
 
 clean:
 	rm -f *.o $(EXENAME)

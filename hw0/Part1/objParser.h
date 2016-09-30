@@ -1,3 +1,6 @@
+#ifndef OBJPARSER
+#define OBJPARSER
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -22,6 +25,7 @@ typedef struct _vertex {
 
     _vertex() : x (0), y (0), z (0) {}
     _vertex(float x, float y, float z) : x (x), y (y), z (z) {}
+    ~_vertex() {}
 } vertex;
 
 /*
@@ -37,6 +41,7 @@ typedef struct _facet {
 
     _facet() : v1 (0), v2 (0), v3 (0) {}
     _facet(int v1, int v2, int v3) : v1 (v1), v2 (v2), v3 (v3) {}
+    ~_facet() {}
 } facet;
 
 /*
@@ -53,6 +58,12 @@ typedef struct _shape3D {
     _shape3D() : name (""), vertices (NULL), facets (NULL) {}
     _shape3D(std::string name, std::vector<vertex> *v, std::vector<facet> *f) :
                 name (name), vertices (v), facets (f) {}
+    ~_shape3D() {}
+
+    void clear() {
+        vertices->clear();
+        facets->clear();
+    }
 
     void print() {
         // Can't have two threads writing to file
@@ -73,3 +84,6 @@ typedef struct _shape3D {
 
 // Externally public functions
 int parseObjFile (char*, shape3D*);
+int parseObjFile (std::string, shape3D*);
+
+#endif // ifndef OBJPARSER

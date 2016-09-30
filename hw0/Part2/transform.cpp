@@ -14,61 +14,59 @@ using namespace std;
 using namespace Eigen;
 
 /*
- parseTransform
+ generateMatrices
 
  For each line, we will create a matrix of 4 dimensions.  This only works for
- 3D systems.
-      t   translation vector (tx, ty, tz) creates matrix
-                  [ 1  0  0 tx ]
-                  [ 0  1  0 ty ]
-                  [ 0  0  1 tz ]
-                  [ 0  0  0  1 ]
-      r   rotation vector and rotation degrees (rx, ry, rz, theta)
-          in radians, where rx, ry, rz is in {0, 1} and (rx, ry, rz) contains
-          exactly two zeroes.  This is true for any number of dimensions.
-          The resultant rotation matrix will rotate just the two zero
-          dimensions.  If the vector does not satisfy these conditions,
-          the behavior is undefined.  The matrix will be 4D but rotate
-          only in 2D.  For example, (1, 0, 0, t) gives
-                  [       1       0       0       0]
-                  [       0  cos(t) -sin(t)       0]
-                  [       0  sin(t)  cos(t)       0]
-                  [       0       0       0       1]
-      s   scalar matrix (sx, sy, sz) creates matrix
-                  [ sx   0   0   0 ]
-                  [  0  sy   0   0 ]
-                  [  0   0  sz   0 ]
-                  [  0   0   0   1 ]
+ 3D systems.  This parses the file until either an empty line or the end of
+ the file.
+    t   translation vector (tx, ty, tz) creates matrix
+            [ 1  0  0 tx ]
+            [ 0  1  0 ty ]
+            [ 0  0  1 tz ]
+            [ 0  0  0  1 ]
+    r   rotation vector and rotation degrees (rx, ry, rz, theta)
+        in radians, where rx, ry, rz is in {0, 1} and (rx, ry, rz) contains
+        exactly two zeroes.  This is true for any number of dimensions.
+        The resultant rotation matrix will rotate just the two zero
+        dimensions.  If the vector does not satisfy these conditions,
+        the behavior is undefined.  The matrix will be 4D but rotate
+        only in 2D.  For example, (1, 0, 0, t) gives
+            [       1       0       0       0]
+            [       0  cos(t) -sin(t)       0]
+            [       0  sin(t)  cos(t)       0]
+            [       0       0       0       1]
+    s   scalar matrix (sx, sy, sz) creates matrix
+            [ sx   0   0   0 ]
+            [  0  sy   0   0 ]
+            [  0   0  sz   0 ]
+            [  0   0   0   1 ]
 
- Arguments: char *filename - The name of the file to parse
-            vector<MatrixXd> *matrices - Vector to output list of transform
-                matrices.  These will be 4x4 matrices.
+ Arguments: ifstream *openFile - The file being read
+ vector<MatrixXd> *matrices - The matrices created from the
+ instructions in the file.
 
- Returns:   (int) - Zero on success, nonzero otherwise
+ Returns:   (int) - Zero if successful, nonzero otherwise.
 */
-int parseTransform
+int generateMatrices
 (
-    char                *filename,
+    ifstream            *openFile,
     vector<MatrixXd>    *matrices
 )
 {
-    // Read the file
-    ifstream inFile(filename);
-    if (!inFile.is_open()) {
-        cout << "unable to open " << filename << endl;
-        return 1;
-    }
-
     // The string buffer that will be read
     string line;
     // Read each line and create an element
-    while (getline(inFile, line)) {
+    while (getline(*openFile, line)) {
         // Split the space-separated line into a vector of strings
         vector<string> vals;
         string temp;
         stringstream s(line);
         while (s >> temp)
             vals.push_back(temp);
+
+        // If at an empty line, stop
+        if (vals.size() == 0)
+            return 0;
 
         // Will be the matrix that is added next
         MatrixXd m(4, 4);
@@ -109,18 +107,48 @@ int parseTransform
                       0, 0, 0, 1;
                 break;
             default:
-                cout << "unable to parse " << filename << endl;
-                inFile.close();
+                cout << "unable to parse file" << endl;
                 return 1;
         }
 
         matrices->push_back(m);
     }
 
-    inFile.close();
-
     return 0;
 }
+
+/*
+ parseTransformFile
+
+ Parses a file and generates a list of matrices from the instructions in the
+ file.
+
+ Arguments: char *filename - The name of the file to parse
+            vector<MatrixXd> *matrices - Vector to output list of transform
+                matrices.  These will be 4x4 matrices.
+
+ Returns:   (int) - Zero on success, nonzero otherwise
+*/
+int parseTransformFile
+(
+    char                *filename,
+    vector<MatrixXd>    *matrices
+)
+{
+    // Read the file
+    ifstream inFile(filename);
+    if (!inFile.is_open()) {
+        cout << "unable to open " << filename << endl;
+        return 1;
+    }
+
+    int status = generateMatrices(&inFile, matrices);
+
+    inFile.close();
+
+    return status;
+}
+
 
 /*
  transformMatrix
@@ -150,36 +178,4 @@ void transformMatrix
         *matrix = *it * *matrix;
     }
     return;
-}
-
-/*
- main
-
- Creates a transformation matrix given the input file of transform
- instructions.  This only works in 3 dimensions.
-*/
-int main(int argc, char **argv) {
-    // Takes exactly one argument
-    if (argc != 2) {
-        cout << "usage: ./transform <transform_data_file>";
-        return 1;
-    }
-
-    vector<MatrixXd> transform_data;
-    if (parseTransform(argv[1], &transform_data) != 0)
-        return 1;
-
-    MatrixXd m(4, 4);
-    m << 1, 0, 0, 0,
-         0, 1, 0, 0,
-         0, 0, 1, 0,
-         0, 0, 0, 0;
-    transformMatrix(&m, &transform_data);
-
-    // Invert the transform matrix
-    MatrixXd m_inv = m.topLeftCorner(3, 3).inverse();
-
-    // Output the transform matrix
-    cout << m_inv << endl;
-    return 0;
 }

@@ -1,3 +1,6 @@
+#ifndef TRANSFORM
+#define TRANSFORM
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -9,4 +12,7 @@
 
 // Externally public functions
 void transformMatrix (Eigen::MatrixXd*, std::vector<Eigen::MatrixXd>*);
-int parseTransform (char*, std::vector<Eigen::MatrixXd>*);
+int generateMatrices (std::ifstream*, std::vector<Eigen::MatrixXd>*);
+int parseTransformFile (char*, std::vector<Eigen::MatrixXd>*);
+
+#endif // ifndef TRANSFORM

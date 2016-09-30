@@ -20,5 +20,6 @@ all: $(SOURCES)
 
 clean:
 	rm -f *.o $(EXENAME)
+	rm -rf *.dSYM
 
 .PHONY: all clean
