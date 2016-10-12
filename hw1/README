@@ -1,0 +1,41 @@
+Tim Menninger
+CS 171
+Created 10/11/16
+
+To run this, we first Make from the top directory.
+
+We now have our wireframe executable in the bin/ directory, which we can run
+with ./bin/wireframe
+
+This program expects exactly 3 arguments:
+    A file describing what is to be displayed
+    Integer for x resolution
+    Integer for y resolution
+In tha torder.
+
+The file should have the form:
+   camera:
+   position <float x> <float y> <float z>
+   orientation <ffloat x> <float y> <float z> <float angle>
+   near <float>
+   far <float>
+   left <float>
+   right <float>
+   top <float>
+   bottom <float>
+   <newline>
+   objects:
+   <name1> <OBJ file1>
+   ... // Some number of objects
+   <nameN> <OBJ fileN>
+   <newline>
+   <name in [name1, nameN]>
+   <transformation 1>
+   ... // Some number of transformations
+   <transformation M>
+   <newline>
+   ... // Repeat for some number of objects (can contain repeats)
+   <name in [name1, nameN]>
+   <transformation 1>
+   ... // Some number of transformations
+   <transformation P>

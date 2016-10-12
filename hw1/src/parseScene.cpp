@@ -13,6 +13,8 @@
 using namespace std;
 using namespace Eigen;
 
+#define PI 3.14159262
+
 
 /*
  getOriginalShapes
@@ -50,6 +52,7 @@ void getOriginalShapes
     // Trash the first line, which is just a token
     getline(*inFile, line);
     while (getline(*inFile, line)) {
+
         // Split the space-separated line into a vector of strings
         vector<string> vals = getSpaceDelimitedWords(line);
 
@@ -63,7 +66,7 @@ void getOriginalShapes
         orig->vertices = new vector<vertex>;
         orig->facets = new vector<facet>;
         // Parse the obj file we obtained from this description
-        parseObjFile(vals[1], orig);
+        parseObjFile(OBJ_DIR + vals[1], orig);
         orig->name = vals[0];
         // Save the object
         order->push_back(vals[0]);
@@ -112,14 +115,16 @@ void getCameraInfo
 
     // First value is the camera position
     getline(*inFile, line);
+
     vals = getSpaceDelimitedWords(line);
     float x = strtof(vals[1].c_str(), NULL);
     float y = strtof(vals[2].c_str(), NULL);
     float z = strtof(vals[3].c_str(), NULL);
-    cam->pos = point3d(x, y, z);
+    cam->pos = point3D(x, y, z);
 
     // Second value is camera orientation
     getline(*inFile, line);
+
     vals = getSpaceDelimitedWords(line);
     x = strtof(vals[1].c_str(), NULL);
     y = strtof(vals[2].c_str(), NULL);
@@ -128,7 +133,7 @@ void getCameraInfo
     cam->orient = orientation(x, y, z, t);
 
     // Last six values are all floats.  Will use offset to fill rest of struct
-    int offset = sizeof(point3d) + sizeof(orientation);
+    int offset = sizeof(point3D) + sizeof(orientation);
     char *addr = (char *) cam;
     while (getline(*inFile, line)) {
         vals = getSpaceDelimitedWords(line);
@@ -144,7 +149,6 @@ void getCameraInfo
         offset += sizeof(float);
     }
 }
-
 
 /*
  transformShape
@@ -178,7 +182,7 @@ void transformShape
     for (; it != origShape->vertices->end(); ++it) {
         // Create a vector from the vertex
         MatrixXd vOld(4, 1);
-        vOld << it->p.x, it->p.y, it->p.z, 1;
+        vOld << it->x, it->y, it->z, 1;
 
         // Transform the vertex
         MatrixXd vNew = *matrix * vOld;
@@ -231,6 +235,8 @@ void transformShape
     <transformation P>
 
  Arguments: char *filename - The name of the file to parse
+            camera *cam - An empty camera instance to fill with what is read
+                in the file.
             vector<string> - A vector of object names in the order they were
                 read.
             map<string, shape3D*> *originals - Maps object names to the
@@ -243,6 +249,7 @@ void transformShape
 int parseScene
 (
     char                            *filename,
+    camera                          *cam,
     vector<string>                  *order,
     map<string, shape3D*>           *originals,
     map<string, vector<shape3D> >   *out
@@ -259,120 +266,37 @@ int parseScene
         cout << "unable to open " << filename << endl;
         return 1;
     }
+    // The first lines describe the camera
+    getCameraInfo(&inFile, cam);
 
-    // The first line(s) are objects and names for those objects
+    // The next line(s) are objects and names for those objects
     getOriginalShapes(&inFile, order, originals);
 
-    // The next sets of lines each describe a transformation on an object
+    // The next sets of lines each describe a transformation on an object,
+    // each being prefaced by the object name
     string line;
     while (getline(inFile, line)) {
         // Create a transformation matrix from the instructions
         MatrixXd transMatrix = MatrixXd::Identity(4, 4);
         vector<MatrixXd> matrices;
-        generateMatrices(&inFile, &matrices);
+        generateMatrix(&inFile, &matrices);
         transformMatrix(&transMatrix, &matrices);
 
-        // Transform the shape
+        // Create the empty shape and give it an approprate name
         shape3D transformed;
-        transformed.vertices = new vector<vertex>;
-        transformed.facets = new vector<facet>;
         string objName = line.substr(0, line.length());
-        shape3D *origShape = (*originals)[objName];
-        transformShape(origShape, &transMatrix, &transformed);
-        // Give the name and copy number to the transformed shape
         ostringstream copyNumber;
         copyNumber << (*out)[objName].size() + 1;
         transformed.name = objName + "_copy" + copyNumber.str();
+        transformed.vertices = new vector<vertex>;
+        transformed.facets = new vector<facet>;
+        // Transform the shape
+        shape3D *origShape = (*originals)[objName];
+        transformShape(origShape, &transMatrix, &transformed);
+        // Give the name and copy number to the transformed shape
 
         // Add the shape to the output
         (*out)[objName].push_back(transformed);
     }
-
     return 0;
-}
-
-/*
- printShapes
-
- Prints the shapes according to the CS171 hw0 FA2016 specification.
-
- Arguments: vector<string> *order - The order in which to print the shapes,
-                which matches the order they were read from the file
-            map<string, shape3D*> *originals - All of the original objects,
-                as they were in their OBJ files, indexed by name
-            map<string, vector<shape3D> > *transforms - The transformed copies
-                of the objects, indexed by the name of the original object
-
- Returns:   Nothing.
-*/
-void printShapes
-(
-    vector<string>                  *order,
-    map<string, shape3D*>           *originals,
-    map<string, vector<shape3D> >   *transforms
-)
-{
-    assert(order);
-    assert(originals);
-    assert(transforms);
-
-    // Print all of the originals, keeping a list of the order they're printed
-    // to make it easier to look at.
-    vector<string>::iterator it = order->begin();
-    for (; it != order->end(); ++it) {
-        (*originals)[*it]->print();
-    }
-
-    // Print all of the transformations
-    it = order->begin();
-    for (; it != order->end(); ++it) {
-        // Get the list of copies
-        vector<shape3D> shapes = (*transforms)[*it];
-        vector<shape3D>::iterator shape = shapes.begin();
-        // Print each copy
-        for (; shape != shapes.end(); ++shape) {
-            shape->print();
-        }
-    }
-}
-
-/*
- cleanupShapes
-
- Takes the map of original shapes and its copies and frees allocated memory.
- This function is very specific to the operations done in this file.
-
- Arguments: map<string, shape3D*> *shapes - Frees all of the shapes and their
-                vector pointers.
-            map<string, vector<shape3D> > *shapesVec - Frees only the vector
-                pointers (because the shapes aren't pointers)
-
- Returns:   Nothing.
- */
-void cleanupShapes
-(
-    map<string, shape3D*>           *shapes,
-    map<string, vector<shape3D> >   *shapesVec
-)
-{
-    assert(shapes);
-    assert(shapesVec);
-
-    // Delete the shapes in the shapes map
-    map<string, shape3D*>::iterator it = shapes->begin();
-    for (; it != shapes->end(); ++it) {
-        delete it->second->vertices;
-        delete it->second->facets;
-        delete it->second;
-    }
-
-    // Delete the vector pointers in each shape in each vector
-    map<string, vector<shape3D> >::iterator vec = shapesVec->begin();
-    for (; vec != shapesVec->end(); ++vec) {
-        vector<shape3D>::iterator shape = vec->second.begin();
-        for (; shape != vec->second.end(); ++shape) {
-            delete shape->vertices;
-            delete shape->facets;
-        }
-    }
 }

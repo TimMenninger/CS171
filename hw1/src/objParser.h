@@ -8,25 +8,13 @@
 #include <vector>
 #include <assert.h>
 
+#include "geom.h"
+
 
 #define FEXT_LEN        4         // Number of characters in OBJ file extension
 
 
 // Structs
-/*
- point3d
-
- A three-dimensional point.
-*/
-typedef struct _point3d {
-    float x;
-    float y;
-    float z;
-
-    _point3d() : x (0), y (0), z (0) {}
-    _point3d(float x, float y, float z) : x (x), y (y), z (z) {}
-    ~_point3d() {}
-} point3d;
 
 /*
  vertex
@@ -35,10 +23,12 @@ typedef struct _point3d {
  float.
 */
 typedef struct _vertex {
-    point3d p;
+    float x;
+    float y;
+    float z;
 
-    _vertex() : p (point3d()) {}
-    _vertex(float x, float y, float z) : p (point3d(x, y, z)) {}
+    _vertex() : x (0), y (0), z (0) {}
+    _vertex(float x, float y, float z) : x (x), y (y), z (z) {}
     ~_vertex() {}
 } vertex;
 
@@ -79,12 +69,12 @@ typedef struct _shape3D {
         facets->clear();
     }
 
-    void print() {
+    void print(){
         // Can't have two threads writing to file
         std::cout << name << ":" << std::endl << std::endl;
         std::vector<vertex>::iterator v = vertices->begin() + 1;
         for (; v != vertices->end(); ++v) {
-            std::cout << "v " << v->p.x << " " << v->p.y << " " << v->p.z
+            std::cout << "v " << v->x << " " << v->y << " " << v->z
                       << std::endl;
         }
         std::vector<facet>::iterator f = facets->begin();
@@ -92,9 +82,9 @@ typedef struct _shape3D {
             std::cout << "f " << f->v1 << " " << f->v2 << " " << f->v3
                       << std::endl;
         }
-        std::cout << std::endl;
-    }
+        std::cout << std::endl;}
 } shape3D;
+
 
 // Externally public functions
 int parseObjFile (char*, shape3D*);

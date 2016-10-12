@@ -14,7 +14,8 @@
 
 // Externally public functions
 void transformMatrix (Eigen::MatrixXd*, std::vector<Eigen::MatrixXd>*);
-int generateMatrices (std::ifstream*, std::vector<Eigen::MatrixXd>*);
+int generateMatrix (std::ifstream*, std::vector<Eigen::MatrixXd>*);
 int parseTransformFile (char*, std::vector<Eigen::MatrixXd>*);
+int generateTransform (std::string, Eigen::MatrixXd*);
 
 #endif // ifndef TRANSFORM

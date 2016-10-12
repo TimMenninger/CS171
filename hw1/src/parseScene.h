@@ -1,11 +1,13 @@
-#ifndef TRANSFORMOBJS
-#define TRANSFORMOBJS
+#ifndef PARSESCENE
+#define PARSESCENE
 
 #include <map>
 
 #include <Eigen/Dense>
 #include "objParser.h"
 #include "transform.h"
+
+#define OBJ_DIR "data/"
 
 // Structs
 /*
@@ -14,12 +16,12 @@
  Orientation is defined as a point in 3d space and an angle in radians.
 */
 typedef struct _orientation {
-    point3d loc;
+    point3D vec;
     float theta;
 
-    _orientation() : loc (point3d()), theta (0) {}
+    _orientation() : vec (point3D()), theta (0) {}
     _orientation(float x, float y, float z, float t) :
-        loc (point3d(x, y, z)), theta (t) {}
+        vec (point3D(x, y, z)), theta (t) {}
     ~_orientation() {}
 } orientation;
 
@@ -30,7 +32,7 @@ typedef struct _orientation {
  exacty it can "see".
 */
 typedef struct _camera {
-    point3d pos;
+    point3D pos;
     orientation orient;
     float near;
     float far;
@@ -40,7 +42,7 @@ typedef struct _camera {
     float bottom;
 
     _camera() :
-        pos (point3d()),
+        pos (point3D()),
         orient (orientation()),
         near (0),
         far (0),
@@ -51,7 +53,7 @@ typedef struct _camera {
         {}
     _camera(float px, float py, float pz, float ox, float oy, float oz, float t,
             float near, float far, float lt, float rt, float top, float bot) :
-        pos (point3d(px, py, pz)),
+        pos (point3D(px, py, pz)),
         orient (orientation(ox, oy, oz, t)),
         near (near),
         far (far),
@@ -64,8 +66,6 @@ typedef struct _camera {
 } camera;
 
 // Externally public functions
-void cleanupShapes (std::map<std::string, shape3D*>*, std::map<std::string, std::vector<shape3D> >*);
-void printShapes (std::vector<std::string>*, std::map<std::string, shape3D*>*, std::map<std::string, std::vector<shape3D> >*);
-int parseScene (char*, std::vector<std::string>*, std::map<std::string, shape3D*>*, std::map<std::string, std::vector<shape3D> >*);
+int parseScene (char*, camera*, std::vector<std::string>*, std::map<std::string, shape3D*>*, std::map<std::string, std::vector<shape3D> >*);
 
-#endif // ifndef TRANSFORMOBJS
+#endif // ifndef PARSESCENE
