@@ -103,110 +103,6 @@ void perspectiveProjectionMatrix
 }
 
 /*
- worldVertexToCartNDC
-
- Takes a point and a perspective projection matrix and converts the original
- point to Cartesian normalized device coordinates (NDC).
-
- Arguments: vertex orig - The point to be projected
-            MatrixXd toCam - The transformation matrix to bring a point from
-                world space to camera space
-            MatrixXd toNDC - The transformation matrix to bring a point from
-                camera space to NDC
-            vertex *proj - Where to store the projected point
-
- Returns:   Nothing.
-*/
-void worldVertexToCartNDC
-(
-    vertex              orig,
-    MatrixXd            toCam,
-    MatrixXd            toNDC,
-    vertex              *proj
-)
-{
-    assert(proj);
-
-    // Create a 4D vector (x, y, z, w) out of the original point where w = 1
-    MatrixXd origVec(4, 1);
-    origVec << orig.x, orig.y, orig.z, 1;
-
-    // The output homogenous NDC point will be a 4D vector, and is computed
-    // by multiplying the perspective projection matrix by the original point
-    MatrixXd NDC = toNDC * (toCam * origVec);
-
-    // The cartesian point is the x, y, z coordinates of the homogenous NDC
-    // normalized by scaling by -1/w, where w is at the 3rd index (0-indexed)
-    NDC /= -1 * NDC(3);
-
-    // Use the resultant 4D vector to populate the argued address with the
-    // projected point
-    *proj = vertex(NDC(0), NDC(1), NDC(2));
-}
-
-/*
- worldShapeToCartNDC
-
- Takes an object in world space and converts every point to Cartesian NDC,
- preserving the facet vector.
-
- Arguments: shape3D orig - The original shape in world space
-            MatrixXd toCam - Transformation matrix from world space to camera
-                space
-            MatrixXd toNDC - Transformation matrix from camera space to
-                NDC
-            float near - The near parameter of the camera view
-            float far - The far parameter (or frustum) of the camera space
-            shape3D *proj - Where to store the object projected onto NDC
-
- Returns:   Nothing.
-*/
-void worldShapeToCartNDC
-(
-    shape3D             orig,
-    MatrixXd            toCam,
-    MatrixXd            toNDC,
-    float               near,
-    float               far,
-    shape3D             *proj
-)
-{
-    assert(proj);
-
-    // Make sure we are using an empty shape
-    proj->clear();
-
-    // Use the same name for the projected shape, but append NPC for
-    // distinction
-    proj->name = orig.name + "_NDC";
-
-    // We need to omit facets whose vertices are not in our camera space
-    // (z < -far or z > -in).  We will do this by keeping a list of those
-    // points that are out of reach, to be referenced when we copy facets
-    // over.  No need to delete points, as it is the facets that dictate
-    // what is displayed.  We know that this must be in ascending order,
-    // which we will use to our advantage when checking vertices for each
-    // facet.
-    int index;
-
-    // Project each point in the original shape and put it in the new shape
-    // Recall that facets assume vertices are 1-indexed, so the 0th vertex
-    // is a dummy
-    vector<vertex>::iterator v = orig.vertices->begin();
-    for (; v != orig.vertices->end(); ++v) {
-        vertex projPt;
-        worldVertexToCartNDC(*v, toCam, toNDC, &projPt);
-        index++;
-        proj->vertices->push_back(projPt);
-    }
-    // All of the facets are still the same set of 3 vertices
-    vector<facet>::iterator f = orig.facets->begin();
-    for (; f != orig.facets->end(); ++f) {
-        proj->facets->push_back(*f);
-    }
-}
-
-/*
  worldToCartNDC
 
  Takes a "world" of shapes (stored in vectors) all in world space and
@@ -251,7 +147,7 @@ void worldToCartNDC
 
             // Convert the shape to Cartesian NDC, removing facets not in
             // camera space
-            worldShapeToCartNDC(*s, toCam, toNDC, cam.near, cam.far, &proj);
+            s->worldToCartNDC(toCam, toNDC, cam.near, cam.far, &proj);
             NDCShapes->push_back(proj);
         }
     }

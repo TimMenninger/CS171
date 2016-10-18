@@ -13,77 +13,6 @@
 using namespace std;
 
 /*
- NDCVertexToImage
-
- Projects a vertex in NDC onto the 2D screen from which we are viewing.
-
- Arguments: int xres - X resolution of the image in pixels
-            int yres - Y resolution of the image in pixels
-            camera *cam - The camera view information
-            vertex v - The vertex to project onto NDC
-            shape3D *out - The projected vertex is stored in the vertices
-                attribute of this shape3D
-
- Returns:   Nothing.
-*/
-void NDCVertexToImage
-(
-    int                 xres,
-    int                 yres,
-    camera              *cam,
-    vertex              v,
-    shape3D             *out
-)
-{
-    // Only want to add this point if it is within (-1, -1, -1) and (1, 1, 1)
-    float x = v.x, y = v.y, z = v.z;
-    if (x > 1 || y > 1 /*|| z > 1*/ || x < -1 || y < -1 /*|| z < -1*/)
-        return;
-
-    // Point is in view, scale NDC (-1, 1) to (0, xres) and (0, yres) and add
-    // it to the image
-    int winX = (1 + x) * (xres / 2);
-    int winY = ((1 + y) * (yres / 2));
-    out->vertices->push_back(vertex(winX, winY, 0));
-}
-
-/*
- NDCShapeToScreen
-
- Projects a shape whose vertices are in NDC onto a 2D screen.
-
- Arguments: int xres - X resolution of the image in pixels
-            int yres - Y resolution of the image in pixels
-            camera *cam - The camera view information
-            shape3D origShape - The original shape, in NDC
-            shape3D *out - The projected vertex is stored in the vertices
-                attribute of this shape3D
-
- Returns:   Nothing.
-*/
-void NDCShapeToScreen
-(
-    int                 xres,
-    int                 yres,
-    camera              *cam,
-    shape3D             origShape,
-    shape3D             *outShape
-)
-{
-    // Project every vertex in the origShape onto the screen image
-    vector<vertex>::iterator v = origShape.vertices->begin();
-    for (; v != origShape.vertices->end(); ++v) {
-        NDCVertexToImage(xres, yres, cam, *v, outShape);
-    }
-
-    // Copy all of the facets
-    vector<facet>::iterator f = origShape.facets->begin();
-    for (; f != origShape.facets->end(); ++f) {
-        outShape->facets->push_back(*f);
-    }
-}
-
-/*
  NDCToScreen
 
  Projects a vector of shapes whose vertices are all in NDC onto a 2D screen,
@@ -116,7 +45,7 @@ void NDCToScreen
         shape3D scrShape;
         scrShape.vertices = new vector<vertex>;
         scrShape.facets = new vector<facet>;
-        NDCShapeToScreen(xres, yres, cam, *shape, &scrShape);
+        shape->NDCToScreen(xres, yres, cam, &scrShape);
         screenShapes->push_back(scrShape);
     }
 }

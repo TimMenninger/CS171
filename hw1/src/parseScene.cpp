@@ -151,53 +151,6 @@ void getCameraInfo
 }
 
 /*
- transformShape
-
- Takes an original shape and a transformation matrix and applies the
- transformation.  It fills an argued shape pointer with the resultant shape.
-
- Arguments: shape3D *origShape - The original shape object
-            MatrixXd *matrix - The transformation matrix
-            shape3D *transformed - Pointer to the shape to fill with the
-                result
-
- Returns:   Nothing.
- */
-void transformShape
-(
-    shape3D     *origShape,
-    MatrixXd    *matrix,
-    shape3D     *transformed
-)
-{
-    assert(origShape);
-    assert(matrix);
-    assert(transformed);
-
-    // Ensure we are starting with an empty shape
-    transformed->clear();
-
-    // Apply the transformation to every point in the copy
-    vector<vertex>::iterator it = origShape->vertices->begin();
-    for (; it != origShape->vertices->end(); ++it) {
-        // Create a vector from the vertex
-        MatrixXd vOld(4, 1);
-        vOld << it->x, it->y, it->z, 1;
-
-        // Transform the vertex
-        MatrixXd vNew = *matrix * vOld;
-        vertex v(vNew(0), vNew(1), vNew(2));
-        transformed->vertices->push_back(v);
-    }
-
-    // The set of faces has the same vertices (only the vertices move)
-    vector<facet>::iterator face = origShape->facets->begin();
-    for (; face != origShape->facets->end(); ++face) {
-        transformed->facets->push_back(*face);
-    }
-}
-
-/*
  parseScene
 
  Iterates through lines in the file with the argued name.  It expects the first
@@ -292,7 +245,7 @@ int parseScene
         transformed.facets = new vector<facet>;
         // Transform the shape
         shape3D *origShape = (*originals)[objName];
-        transformShape(origShape, &transMatrix, &transformed);
+        origShape->transformShape(&transMatrix, &transformed);
         // Give the name and copy number to the transformed shape
 
         // Add the shape to the output
