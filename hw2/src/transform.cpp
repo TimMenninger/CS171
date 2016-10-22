@@ -14,58 +14,6 @@ using namespace std;
 using namespace Eigen;
 
 /*
- generateMatrix
-
- For each line, we will create a matrix of 4 dimensions.  This only works for
- 3D systems.  This parses the file until either an empty line or the end of
- the file.
-    t   translation vector (tx, ty, tz) creates matrix
-            [ 1  0  0 tx ]
-            [ 0  1  0 ty ]
-            [ 0  0  1 tz ]
-            [ 0  0  0  1 ]
-    r   rotation vector and rotation degrees (rx, ry, rz, theta)
-        in radians, where rx, ry, rz define the axis around which the
-        object will be rotated counterclockwise by theta radians.
-    s   scalar matrix (sx, sy, sz) creates matrix
-            [ sx   0   0   0 ]
-            [  0  sy   0   0 ]
-            [  0   0  sz   0 ]
-            [  0   0   0   1 ]
-
- Arguments: ifstream *openFile - The file being read
- vector<MatrixXd> *matrices - The matrices created from the
- instructions in the file.
-
- Returns:   (int) - Zero if successful, nonzero otherwise.
-*/
-int generateMatrix
-(
-    ifstream            *openFile,
-    vector<MatrixXd>    *matrices
-)
-{
-    assert(openFile);
-    assert(matrices);
-
-    // The string buffer that will be read
-    string line;
-    // Read each line and create an element
-    while (getline(*openFile, line)) {
-        // Will be the matrix that is added next
-        MatrixXd m(4, 4);
-
-        // Generate the matrix from the instruction on this line
-        if (generateTransform(line, &m) == 0)
-            return 0;
-
-        matrices->push_back(m);
-    }
-
-    return 0;
-}
-
-/*
  generateTransform
 
  Takes a string which is a transformation vector and populates a matrix with
@@ -84,12 +32,7 @@ int generateTransform
 )
 {
     // Split the space-separated line into a vector of strings
-    vector<string> vals;
-
-    string temp;
-    stringstream s(transform);
-    while (s >> temp)
-        vals.push_back(temp);
+    vector<string> vals = getSpaceDelimitedWords(transform);
 
     // If at an empty line, stop
     if (vals.size() == 0)
@@ -104,7 +47,7 @@ int generateTransform
     // Handle the possible transform cases
     switch (transform[0]) {
         case 'r':
-            // Normalize vector
+            // Normalize the axis of rotation
             mag = sqrt(x*x + y*y + z*z);
             x /= mag;
             y /= mag;
@@ -141,42 +84,6 @@ int generateTransform
 
     return vals.size();
 }
-
-/*
- parseTransformFile
-
- Parses a file and generates a list of matrices from the instructions in the
- file.
-
- Arguments: char *filename - The name of the file to parse
-            vector<MatrixXd> *matrices - Vector to output list of transform
-                matrices.  These will be 4x4 matrices.
-
- Returns:   (int) - Zero on success, nonzero otherwise
-*/
-int parseTransformFile
-(
-    char                *filename,
-    vector<MatrixXd>    *matrices
-)
-{
-    assert(filename);
-    assert(matrices);
-
-    // Read the file
-    ifstream inFile(filename);
-    if (!inFile.is_open()) {
-        cout << "unable to open " << filename << endl;
-        return 1;
-    }
-
-    int status = generateMatrix(&inFile, matrices);
-
-    inFile.close();
-
-    return status;
-}
-
 
 /*
  transformMatrix

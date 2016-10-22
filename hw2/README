@@ -1,0 +1,49 @@
+Tim Menninger
+CS 171
+Created 10/21/16
+
+To run this, we first Make from the top directory.
+
+We now have our shaded executable in the bin/ directory, which we can run
+with ./bin/shaded
+
+This program expects exactly 4 arguments:
+    A file describing what is to be displayed
+    Integer for x resolution
+    Integer for y resolution
+    Shading algorithm: 0 for Gouraud, 1 for Phong
+In that order.
+
+The file should have the form:
+    camera:
+    position <float x> <float y> <float z>
+    orientation <ffloat x> <float y> <float z> <float angle>
+    near <float>
+    far <float>
+    left <float>
+    right <float>
+    top <float>
+    bottom <float>
+    <newline>
+    light <xyz point> , <rgb color> , <attenuation
+    ... // Some number of light sources
+    <newline>
+    objects:
+    <name1> <OBJ file1>
+    ... // Some number of objects
+    <nameN> <OBJ fileN>
+    <newline>
+    <name in [name1, nameN]>
+    <transformation 1>
+    ambient <r> <g> <b>
+    diffuse <r> <g> <b>
+    specular <r> <g> <b>
+    shininess <float>
+    ... // Some number of transformations
+    <transformation M>
+    <newline>
+    ... // Repeat for some number of objects (can contain repeats)
+    <name in [name1, nameN]>
+    <transformation 1>
+    ... // Some number of transformations
+    <transformation P>

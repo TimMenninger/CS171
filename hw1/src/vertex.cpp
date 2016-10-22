@@ -35,8 +35,8 @@ void vertex::worldToCartNDC
     MatrixXd NDC = toNDC * (toCam * origVec);
 
     // The cartesian point is the x, y, z coordinates of the homogenous NDC
-    // normalized by scaling by -1/w, where w is at the 3rd index (0-indexed)
-    NDC /= -1 * NDC(3);
+    // normalized by scaling by 1/w, where w is at the 3rd index (0-indexed)
+    NDC /= 1 * NDC(3);
 
     // Use the resultant 4D vector to populate the argued address with the
     // projected point
