@@ -8,7 +8,6 @@
  Author: Tim Menninger
 
 ******************************************************************************/
-
 #include "utils.h"
 
 using namespace std;

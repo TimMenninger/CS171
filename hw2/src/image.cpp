@@ -52,8 +52,7 @@ bool facingCamera
 
  Arguments: int xres - X resolution of the image in pixels
             int yres - Y resolution of the image in pixels
-            camera cam - The camera view information
-            vector<shape3D> NDCShapes - Vector of shapes whose vertices are
+            vector<shape3D> *NDCShapes - Vector of shapes whose vertices are
                 in NDC
             vector<shape3D> *screenShapes - Where to store the screen
                 projected shapes
@@ -64,21 +63,17 @@ void NDCToScreen
 (
     int                 xres,
     int                 yres,
-    camera              *cam,
-    vector<shape3D>     NDCShapes,
+    vector<shape3D>     *NDCShapes,
     vector<shape3D>     *screenShapes
 )
 {
     screenShapes->clear();
 
     // Project every shape onto the screen in 2D
-    vector<shape3D>::iterator shape = NDCShapes.begin();
-    for (; shape != NDCShapes.end(); ++shape) {
+    vector<shape3D>::iterator shape = NDCShapes->begin();
+    for (; shape != NDCShapes->end(); ++shape) {
         shape3D scrShape;
-        scrShape.vertices = new vector<vertex>;
-        scrShape.facets = new vector<facet>;
-        scrShape.normals = new vector<normal>;
-        shape->NDCToScreen(xres, yres, cam, &scrShape);
+        shape->NDCToScreen(xres, yres, &scrShape);
         screenShapes->push_back(scrShape);
     }
 }
@@ -174,19 +169,19 @@ void image::drawLine
 */
 void image::generateWireframe
 (
-    shape3D             shape,
+    shape3D             *shape,
     uint32_t            color
 )
 {
     vertex v1, v2, v3;
 
     // Draw a triangle for every facet
-    vector<facet>::iterator f = shape.facets->begin();
-    for (; f != shape.facets->end(); ++f) {
+    vector<facet>::iterator f = shape->facets.begin();
+    for (; f != shape->facets.end(); ++f) {
         // Get all of the vertices to make things quicker and neater
-        v1 = shape.vertices->at(f->v1);
-        v2 = shape.vertices->at(f->v2);
-        v3 = shape.vertices->at(f->v3);
+        v1 = shape->vertices.at(f->v1);
+        v2 = shape->vertices.at(f->v2);
+        v3 = shape->vertices.at(f->v3);
 
         // Draw each of the three sides of the triangle
         this->drawLine(point2D(v1.x, v1.y), point2D(v2.x, v2.y), color);
@@ -202,22 +197,22 @@ void image::generateWireframe
  already projected onto a screen, and connects the vertices according to the
  instructions contained in the facet vectors.
 
- Arguments: vector<shape3D> shape - The shapes to create wireframes out of
+ Arguments: vector<shape3D> *shape - The shapes to create wireframes out of
             uint32_t color - The color of the wires in the wireframe
 
  Returns:   Nothing.
 */
 void image::generateWireframes
 (
-    vector<shape3D>     shapes,
+    vector<shape3D>     *shapes,
     uint32_t            color
 )
 {
     // Iterate through all the facets in the object, and use the indices to
     // connect points from the pts array (which have been transformed)
-    vector<shape3D>::iterator s = shapes.begin();
-    for (; s != shapes.end(); ++s) {
-        this->generateWireframe(*s, color);
+    vector<shape3D>::iterator s = shapes->begin();
+    for (; s != shapes->end(); ++s) {
+        this->generateWireframe(&(*s), color);
     }
 }
 
@@ -265,7 +260,7 @@ void image::outputPPM
  parameter to the function.
 
  Arguments: facet f - The facet to display
-            shape3D shape - Contains information about the material of f
+            shape3D *shape - Contains information about the material of f
             camera cam - Contains information about what can and can't be seen
                 by the view point
             vector<light> lights - A vector of light sources in the system
@@ -278,7 +273,7 @@ void image::outputPPM
 void image::rasterTriangle
 (
     facet               f,
-    shape3D             shape,
+    shape3D             *shape,
     camera              cam,
     vector<light>       lights,
     int                 maxIntensity,
@@ -286,44 +281,37 @@ void image::rasterTriangle
 )
 {
     // Vertices
-    vertex v1Orig = shape.vertices->at(f.v1);
-    vertex v2Orig = shape.vertices->at(f.v2);
-    vertex v3Orig = shape.vertices->at(f.v3);
+    vertex v1Orig = shape->vertices.at(f.v1);
+    vertex v2Orig = shape->vertices.at(f.v2);
+    vertex v3Orig = shape->vertices.at(f.v3);
 
     // Convert vertices to NDC
-    // First get the transformation matrix that can convert world space to
-    // camera space
-    MatrixXd toCam(4, 4);
-    worldToCameraMatrix(cam, &toCam);
-
-    // Get the perspective projection matrix that we will use to get from a
-    // point in camera space to our screen
-    MatrixXd toNDC(4, 4);
-    perspectiveProjectionMatrix(cam, &toNDC);
-
     // Populate our vertices with Cartesian NDC coordinates
     vertex v1NDC, v2NDC, v3NDC;
-    v1Orig.worldToCartNDC(shape.ptTransform, toCam, toNDC, &v1NDC);
-    v2Orig.worldToCartNDC(shape.ptTransform, toCam, toNDC, &v2NDC);
-    v3Orig.worldToCartNDC(shape.ptTransform, toCam, toNDC, &v3NDC);
+    v1Orig.worldToCartNDC(shape->ptTransform, cam, &v1NDC);
+    v2Orig.worldToCartNDC(shape->ptTransform, cam, &v2NDC);
+    v3Orig.worldToCartNDC(shape->ptTransform, cam, &v3NDC);
 
     // If the vertex is not facing the camera, we do not want to see it.
     if (!facingCamera(v1NDC, v2NDC, v3NDC))
         return;
 
     // Normals for computing light
-    normal n1 = shape.normals->at(f.n1);
-    normal n2 = shape.normals->at(f.n2);
-    normal n3 = shape.normals->at(f.n3);
+    normal n1 = shape->normals.at(f.n1);
+    normal n2 = shape->normals.at(f.n2);
+    normal n3 = shape->normals.at(f.n3);
+
+    // The material of the shape
+    material m = shape->mat;
 
     if (alg == Gouraud) {
         // Compute the color for each vertex
-        v1Orig.computeLight(n1, shape.ambient, shape.diffuse, shape.specular,
-            shape.shininess, cam, lights);
-        v2Orig.computeLight(n2, shape.ambient, shape.diffuse, shape.specular,
-            shape.shininess, cam, lights);
-        v3Orig.computeLight(n3, shape.ambient, shape.diffuse, shape.specular,
-            shape.shininess, cam, lights);
+        v1Orig.computeLight(n1, m.ambient, m.diffuse, m.specular,
+            m.shininess, cam, lights);
+        v2Orig.computeLight(n2, m.ambient, m.diffuse, m.specular,
+            m.shininess, cam, lights);
+        v3Orig.computeLight(n3, m.ambient, m.diffuse, m.specular,
+            m.shininess, cam, lights);
 
         // Copy colors over
         v1NDC.c = v1Orig.c;
@@ -385,8 +373,8 @@ void image::rasterTriangle
 
                     // Now that we have a sort of average vertex and normal,
                     // find the appropriate color.
-                    vNDC.computeLight(n1, shape.ambient, shape.diffuse,
-                        shape.specular, shape.shininess, cam, lights);
+                    vNDC.computeLight(n1, m.ambient, m.diffuse,
+                        m.specular, m.shininess, cam, lights);
                     color = vNDC.c.toUInt32(maxIntensity);
                 } else if (alg == Gouraud) {
                     // GOURAUD
@@ -419,15 +407,15 @@ void image::rasterTriangle
 */
 void image::rasterShape
 (
-    shape3D             shape,
+    shape3D             *shape,
     camera              cam,
     vector<light>       lights,
     shading             alg
 )
 {
     // Want to raster every face on the shape
-    std::vector<facet>::iterator f = shape.facets->begin();
-    for (; f != shape.facets->end(); ++f) {
+    std::vector<facet>::iterator f = shape->facets.begin();
+    for (; f != shape->facets.end(); ++f) {
         this->rasterTriangle(*f, shape, cam, lights, this->intensity, alg);
     }
 }
@@ -437,7 +425,7 @@ void image::rasterShape
 
  Takes a list of shapes and rasters each of them.
 
- Arguments: vector<shape3D> shapes - The list of shapes to raster
+ Arguments: vector<shape3D> *shapes - The list of shapes to raster
             camera cam - Information about the view of the shape
             vector<light> lights - List of light sources in the system
             shading alg - The shading algorithm to use
@@ -446,14 +434,14 @@ void image::rasterShape
 */
 void image::rasterShapes
 (
-    vector<shape3D>     shapes,
+    vector<shape3D>     *shapes,
     camera              cam,
     vector<light>       lights,
     shading             alg
 )
 {
-    vector<shape3D>::iterator s = shapes.begin();
-    for (; s != shapes.end(); ++s) {
-        this->rasterShape(*s, cam, lights, alg);
+    vector<shape3D>::iterator s = shapes->begin();
+    for (; s != shapes->end(); ++s) {
+        this->rasterShape(&(*s), cam, lights, alg);
     }
 }

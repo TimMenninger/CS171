@@ -14,9 +14,10 @@
 
 #include <Eigen/Dense>
 
-#include "projection.h"
 #include "geom.h"
+#include "transform.h"
 #include "light.h"
+#include "projection.h"
 
 // Enums
 /*
@@ -73,16 +74,16 @@ typedef struct _image {
     void outputPPM ();
 
     void drawLine (point2D, point2D, uint32_t);
-    void generateWireframes (std::vector<shape3D>, uint32_t);
-    void generateWireframe (shape3D, uint32_t);
+    void generateWireframes (std::vector<shape3D>*, uint32_t);
+    void generateWireframe (shape3D*, uint32_t);
 
-    void rasterTriangle (facet, shape3D, camera, std::vector<light>, int, shading);
-    void rasterShapes (std::vector<shape3D>, camera, std::vector<light>, shading);
-    void rasterShape (shape3D, camera, std::vector<light>, shading);
+    void rasterTriangle (facet, shape3D*, camera, std::vector<light>, int, shading);
+    void rasterShapes (std::vector<shape3D>*, camera, std::vector<light>, shading);
+    void rasterShape (shape3D*, camera, std::vector<light>, shading);
 
 } image;
 
 // Function handles
-void NDCToScreen (int, int, camera*, std::vector<shape3D>, std::vector<shape3D>*);
+void NDCToScreen (int, int, camera*, std::vector<shape3D>*, std::vector<shape3D>*);
 
 #endif // ifndef IMAGE

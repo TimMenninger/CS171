@@ -14,12 +14,14 @@
 #include <stdint.h>
 
 #include "transform.h"
-#include "objParser.h"
-#include "parseScene.h"
+#include "geom.h"
+#include "vertex.h"
+#include "facet.h"
+#include "camera.h"
+#include "normal.h"
+#include "light.h"
+#include "shape3d.h"
 
-void worldToCartNDC (camera, std::vector<shape3D>, std::vector<shape3D>*);
-void worldToCamera (camera, std::vector<shape3D>, std::vector<shape3D>*);
-void worldToCameraMatrix (camera, Eigen::MatrixXd*);
-void perspectiveProjectionMatrix (camera, Eigen::MatrixXd*);
+void worldToCartNDC (camera, std::vector<shape3D>*, std::vector<shape3D>*);
 
 #endif // ifndef PERSPECTIVE

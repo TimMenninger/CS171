@@ -18,6 +18,11 @@
 #include <assert.h>
 
 #include "geom.h"
+#include "vertex.h"
+#include "facet.h"
+#include "camera.h"
+#include "normal.h"
+#include "light.h"
 #include "shape3d.h"
 
 

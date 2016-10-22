@@ -10,10 +10,6 @@
 #ifndef SHAPE3D
 #define SHAPE3D
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
 #include <vector>
 #include <assert.h>
 
@@ -29,6 +25,22 @@
 
 // Structs
 /*
+ material
+
+ Defines the light characteristics of the surface of an object
+*/
+typedef struct _material {
+    rgb                 ambient;
+    rgb                 diffuse;
+    rgb                 specular;
+    float               shininess;
+
+    _material() : ambient (rgb()), diffuse (rgb()), specular (rgb()),
+        shininess (0) {}
+    ~_material() {}
+} material;
+
+/*
  shape3D
 
  Contains a vector of vertices in 3 dimensions and a vector of facets which
@@ -36,19 +48,16 @@
 */
 typedef struct _shape3D {
     std::string         name;
-    std::vector<vertex> *vertices;
-    std::vector<facet>  *facets;
-    std::vector<normal> *normals;
-    rgb                 ambient;
-    rgb                 diffuse;
-    rgb                 specular;
-    float               shininess;
+    std::vector<vertex> vertices;
+    std::vector<facet>  facets;
+    std::vector<normal> normals;
+    material            mat;
 
     Eigen::MatrixXd     ptTransform;
     Eigen::MatrixXd     normTransform;
 
-    _shape3D() : name (""), vertices (NULL), facets (NULL), normals (NULL),
-        ambient (rgb()), diffuse (rgb()), specular (rgb()), shininess (0),
+    _shape3D() : name (""),
+        vertices (), facets (), normals (), mat (material()),
         ptTransform(Eigen::MatrixXd::Identity(4, 4)),
         normTransform(Eigen::MatrixXd::Identity(4, 4)) {}
     ~_shape3D() {}
@@ -56,20 +65,16 @@ typedef struct _shape3D {
     void clear() {
         // Clear vectors.  Put dummy value in vertices and normals because
         // they are 1-indexed
-        vertices->clear();
-        vertices->push_back(vertex());
-        normals->clear();
-        normals->push_back(normal());
-        facets->clear();
+        vertices.clear();
+        vertices.push_back(vertex());
+        normals.clear();
+        normals.push_back(normal());
+        facets.clear();
     }
 
-    void NDCToScreen (int, int, camera*, _shape3D*);
-    void worldToCartNDC (Eigen::MatrixXd, Eigen::MatrixXd, _shape3D*);
-    void worldToCamera (Eigen::MatrixXd, _shape3D*);
+    void NDCToScreen (int, int, _shape3D*);
+    void worldToCartNDC (camera, _shape3D*);
     void transform ();
-
-    void copy(_shape3D*);
-    void print();
 } shape3D;
 
 

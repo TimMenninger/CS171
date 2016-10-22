@@ -56,10 +56,8 @@ vertex vertex::operator*
  Takes a point and a perspective projection matrix and converts the original
  point to Cartesian normalized device coordinates (NDC).
 
- Arguments: MatrixXd toCam - The transformation matrix to bring a point from
-                world space to camera space
-            MatrixXd toNDC - The transformation matrix to bring a point from
-                camera space to NDC
+ Arguments: MatrixXd transform - The transformation matrix to apply
+            camera cam - Used to convert to camera space then NDC
             vertex *proj - Where to store the projected point
 
  Returns:   Nothing.
@@ -67,12 +65,21 @@ vertex vertex::operator*
 void vertex::worldToCartNDC
 (
     MatrixXd            transform,
-    MatrixXd            toCam,
-    MatrixXd            toNDC,
+    camera              cam,
     vertex              *proj
 )
 {
     assert(proj);
+
+    // First get the transformation matrix that can convert world space to
+    // camera space
+    MatrixXd toCam(4, 4);
+    cam.worldToCameraMatrix(&toCam);
+
+    // Get the perspective projection matrix that we will use to get from a
+    // point in camera space to our screen
+    MatrixXd toNDC(4, 4);
+    cam.perspectiveProjectionMatrix(&toNDC);
 
     // Create a 4D vector (x, y, z, w) out of the original point where w = 1
     MatrixXd origVec(4, 1);
@@ -89,36 +96,6 @@ void vertex::worldToCartNDC
     // Use the resultant 4D vector to populate the argued address with the
     // projected point
     *proj = vertex(NDC(0), NDC(1), NDC(2));
-}
-
-/*
- vertex::worldToCamera
-
- Takes a vertex in world coordinates and transforms it to camera space.
-
- Arguments: MatrixXd toCam - The matrix used to transform the vertex.
-            vertex *proj - The projected vertex
-
- Returns:   Nothing.
-*/
-void vertex::worldToCamera
-(
-    MatrixXd            toCam,
-    vertex              *proj
-)
-{
-    assert(proj);
-
-    // Create a 4D vector (x, y, z, w) out of the original point where w = 1
-    MatrixXd origVec(4, 1);
-    origVec << this->x, this->y, this->z, 1;
-
-    // The output will be a 4D vector
-    MatrixXd cam = toCam * origVec;
-
-    // Use the resultant 4D vector to populate the argued address with the
-    // projected point
-    *proj = vertex(cam(0), cam(1), cam(2));
 }
 
 /*

@@ -71,10 +71,10 @@ int parseObjFile
         if (vals[0] == "v") {
             // Is a vertex -- vals contains 'v' then 3 floats
             ver = vertex(stof(vals[1]), stof(vals[2]), stof(vals[3]));
-            shape->vertices->push_back(ver);
+            shape->vertices.push_back(ver);
         } else if (vals[0] == "vn") {
             vn = normal(stof(vals[1]), stof(vals[2]), stof(vals[3]));
-            shape->normals->push_back(vn);
+            shape->normals.push_back(vn);
         } else if (vals[0] == "f") {
             int vertices[3];
             int normals[3];
@@ -86,7 +86,7 @@ int parseObjFile
             }
             fac = facet(vertices[0], vertices[1], vertices[2],
                         normals[0], normals[1], normals[2]);
-            shape->facets->push_back(fac);
+            shape->facets.push_back(fac);
         } else {
             cout << "error parsing " << fn << endl;
             inFile.close();

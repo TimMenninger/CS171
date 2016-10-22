@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 
     // Take the NDC coordinates and get their projections onto the screen
     image im(xres, yres, MAX_INTENSITY, BKG_COLOR);
-    im.rasterShapes(copies, cam, lights, alg);
+    im.rasterShapes(&copies, cam, lights, alg);
     im.outputPPM();
 
     return 0;

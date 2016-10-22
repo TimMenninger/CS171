@@ -14,6 +14,9 @@
 #include <vector>
 #include <stdint.h>
 
+#include "utils.h"
+#include "geom.h"
+#include "transform.h"
 #include "geom.h"
 #include "camera.h"
 #include "normal.h"

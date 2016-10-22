@@ -43,8 +43,7 @@ typedef struct _vertex {
     point3D toPoint3D() { return point3D(x, y, z); }
 
     void NDCToImage (int, int, _vertex*);
-    void worldToCartNDC (Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, _vertex*);
-    void worldToCamera (Eigen::MatrixXd, _vertex*);
+    void worldToCartNDC (Eigen::MatrixXd, camera, _vertex*);
     void computeLight (normal, rgb, rgb, rgb, float, camera, std::vector<light>);
     float barycentricCoeff (_vertex, _vertex, point3D);
 } vertex;

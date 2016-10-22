@@ -13,6 +13,7 @@
 #include <map>
 
 #include <Eigen/Dense>
+
 #include "objParser.h"
 #include "transform.h"
 #include "camera.h"

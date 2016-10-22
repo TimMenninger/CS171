@@ -12,7 +12,9 @@
 
 #include <iostream>
 #include <Eigen/Dense>
+#include "utils.h"
 #include "geom.h"
+#include "transform.h"
 
 // Structs
 /*
@@ -68,6 +70,9 @@ typedef struct _camera {
         bottom (bot)
         {}
     ~_camera() {}
+
+    void worldToCameraMatrix (Eigen::MatrixXd*);
+    void perspectiveProjectionMatrix (Eigen::MatrixXd*);
 } camera;
 
 #endif // ifndef CAMERA

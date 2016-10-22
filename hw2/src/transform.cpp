@@ -21,7 +21,7 @@ using namespace Eigen;
 
  Arguments: string transform - A string representation of the transformation
                 vector
-            MatrixXd m - The matrix to populate
+            MatrixXd *m - The matrix to populate
 
  Returns:   int - Number of values in string, negative if error
 */

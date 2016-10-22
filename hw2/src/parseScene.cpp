@@ -123,9 +123,6 @@ void getOriginalShapes
 
         // The first value is the name, the second is the file
         shape3D *orig = new shape3D();
-        orig->vertices = new vector<vertex>;
-        orig->facets = new vector<facet>;
-        orig->normals = new vector<normal>;
         // Parse the obj file we obtained from this description
         parseObjFile(OBJ_DIR + vals[1], orig);
         orig->name = vals[0];
@@ -282,30 +279,30 @@ void getTransformedShapes
     vector<string> vals;
     while (getline(*inFile, line)) {
         // Create the empty shape and give it an approprate name
-        shape3D newShape;
         string objName = line.substr(0, line.length());
-
+        shape3D newShape = *(*originals)[objName];
         // Give the name and copy number to the new shape
         newShape.name = objName + "_copy";
-        newShape.vertices = new vector<vertex>;
-        newShape.facets = new vector<facet>;
-        newShape.normals = new vector<normal>;
 
-        newShape.copy((*originals)[objName]);
+        // The material of the shape, which we will then insert
+        material mat;
 
         // The first lines are ambient, diffuse, specular, shininess
         getline(*inFile, line);
         vals = getSpaceDelimitedWords(line);
-        newShape.ambient = rgb(stof(vals[1]), stof(vals[2]), stof(vals[3]));
+        mat.ambient = rgb(stof(vals[1]), stof(vals[2]), stof(vals[3]));
         getline(*inFile, line);
         vals = getSpaceDelimitedWords(line);
-        newShape.diffuse = rgb(stof(vals[1]), stof(vals[2]), stof(vals[3]));
+        mat.diffuse = rgb(stof(vals[1]), stof(vals[2]), stof(vals[3]));
         getline(*inFile, line);
         vals = getSpaceDelimitedWords(line);
-        newShape.specular = rgb(stof(vals[1]), stof(vals[2]), stof(vals[3]));
+        mat.specular = rgb(stof(vals[1]), stof(vals[2]), stof(vals[3]));
         getline(*inFile, line);
         vals = getSpaceDelimitedWords(line);
-        newShape.shininess = stof(vals[1]);
+        mat.shininess = stof(vals[1]);
+
+        // Insert the material into the shape
+        newShape.mat = mat;
 
         // Create a transformation matrix from the instructions
         MatrixXd ptTransMatrix = MatrixXd::Identity(4, 4);
@@ -387,6 +384,8 @@ int parseScene
     assert(filename);
     assert(order);
     assert(originals);
+    assert(lights);
+    assert(cam);
     assert(out);
 
     // Read the file

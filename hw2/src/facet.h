@@ -10,6 +10,8 @@
 #ifndef FACET
 #define FACET
 
+#include "camera.h"
+#include "light.h"
 #include "vertex.h"
 
 /*
