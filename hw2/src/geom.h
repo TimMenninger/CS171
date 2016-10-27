@@ -41,8 +41,8 @@ typedef struct _point3D {
     ~_point3D() {}
 
     void normalize() {
-        float n = sqrt(x*x + y*y + z*z);
-        *this = _point3D(x/n, y/n, z/n);
+        float mag = sqrt(x*x + y*y + z*z);
+        *this = _point3D(x/mag, y/mag, z/mag);
     }
     float dot(_point3D pt) { return x*pt.x + y*pt.y + z*pt.z; }
     _point3D operator+ (const _point3D& p) {

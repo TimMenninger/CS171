@@ -165,7 +165,9 @@ void vertex::computeLight
     for (; l != lights.end(); ++l) {
         // Compute the distance so we can get attenuation
         float dist = l->loc.distanceTo(this->toPoint3D());
-        float attenuation = 1 / (1 + dist*dist);
+        // Get the attenuation constant from the light source
+        float k = l->attenuation;
+        float attenuation = 1 / (1 + k*dist*dist);
 
         // Scale light intensity by attenuation
         l->color = l->color * attenuation;

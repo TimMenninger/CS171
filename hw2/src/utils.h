@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#define PI 3.1415926
+
 std::vector<std::string> getSpaceDelimitedWords (std::string line);
 
 #endif // ifndef UTILS

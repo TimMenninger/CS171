@@ -340,7 +340,7 @@ void getTransformedShapes
     top <float>
     bottom <float>
     <newline>
-    light <xyz point> , <rgb color> , <attenuation
+    light <xyz point> , <rgb color> , <attenuation>
     ... // Some number of light sources
     <newline>
     objects:

@@ -48,8 +48,7 @@ int main(int argc, char **argv) {
     vector<shape3D> copies;
     int status = parseScene(argv[1], &cam, &lights,
         &order, &originals, &copies);
-
-    // Take the NDC coordinates and get their projections onto the screen
+    // Create the shaded model
     image im(xres, yres, MAX_INTENSITY, BKG_COLOR);
     im.rasterShapes(&copies, cam, lights, alg);
     im.outputPPM();

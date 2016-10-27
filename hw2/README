@@ -1,5 +1,4 @@
 Tim Menninger
-CS 171
 Created 10/21/16
 
 To run this, we first Make from the top directory.
@@ -14,10 +13,18 @@ This program expects exactly 4 arguments:
     Shading algorithm: 0 for Gouraud, 1 for Phong
 In that order.
 
-The file should have the form:
+This writes to standard output the final image in PPM format.
+
+Example usage:
+    $ make
+    $ ./bin/shaded data/scene_bunny.txt 500 500 0 > scene_bunny.ppm
+
+The file should have the following form.
+NOTE: There is no error handling on file parsing.  Invalid parameters
+will have undefined behavior.
     camera:
     position <float x> <float y> <float z>
-    orientation <ffloat x> <float y> <float z> <float angle>
+    orientation <float x> <float y> <float z> <float angle>
     near <float>
     far <float>
     left <float>
@@ -25,7 +32,7 @@ The file should have the form:
     top <float>
     bottom <float>
     <newline>
-    light <xyz point> , <rgb color> , <attenuation
+    light <xyz point> , <rgb color> , <attenuation constant>
     ... // Some number of light sources
     <newline>
     objects:
