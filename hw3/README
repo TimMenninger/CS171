@@ -1,0 +1,11 @@
+From the top directory, compile by running
+$ make
+
+Then, the binary is put into the bin/ directory.  Thus, to run, we call
+$ ./bin/opengl_shader <some_file> <xres> <yres>
+where examples of <some_file> can be found as .txt files in the data/
+directory.
+
+Example (from top directory):
+$ make
+$ ./bin/opengl_shader data/scene_cube2.txt 500 500
