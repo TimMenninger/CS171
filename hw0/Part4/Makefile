@@ -4,7 +4,7 @@
 # This is a template Makefile for the assignment. Edit it however you find
 # convenient.
 ###############################################################################
-CC = g++
+CC = g++ -std=c++11
 FLAGS = -g
 
 # The following line is a relative directory reference that assumes the Eigen

@@ -4,7 +4,7 @@
 # This is a template Makefile for the assignment. Edit it however you find
 # convenient.
 ###############################################################################
-CC = g++
+CC = g++ -std=c++11
 FLAGS = -g
 SOURCES = *.cpp
 
