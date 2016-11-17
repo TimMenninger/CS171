@@ -1,6 +1,7 @@
 #ifndef SCENE_HPP
 #define SCENE_HPP
 
+#include <ctime>
 #include "common.hpp"
 
 struct SceneObject {
@@ -14,6 +15,7 @@ class Scene {
 private:
     std::vector<int> light_ids;
     std::vector<SceneObject> objects;
+    clock_t begin; // Time in microseconds of last time poll
 
 public:
     Scene();
@@ -33,6 +35,8 @@ public:
         const Vector3f &position,
         const Vector4f &rotation,
         const Vector3f &scale);
+
+    int elapsedUsecs();
 };
 
 #endif

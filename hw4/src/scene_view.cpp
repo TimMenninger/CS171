@@ -1,6 +1,9 @@
 // #define DEBUG_PRINT
 #define DEBUG_ASSERT
 
+// Angular frequency of Part 2
+#define ANGULAR_FREQUENCY 0.25
+
 #include "scene_view.hpp"
 
 #include "scene.hpp"
@@ -128,6 +131,9 @@ void SceneView::render() {
     glPushMatrix();
 
     for (const SceneObject &object : scene->getSceneObjects()) {
+        // Set the scale of the image
+        this->update(scene->elapsedUsecs());
+
         glTranslatef(
             object.position[0],
             object.position[1],
@@ -137,7 +143,6 @@ void SceneView::render() {
             object.rotation[1],
             object.rotation[2],
             object.rotation[3]);
-        glScalef(object.scale[0], object.scale[1], object.scale[2]);
 
         renderModel(Model::getModel(object.model_id));
     }
@@ -146,6 +151,15 @@ void SceneView::render() {
 }
 
 void SceneView::update(int usecs) {
+    // Update the object scale to be 1 + (1/2) * sin(wt) where t is the time
+    // in microseconds since the beginning of the program and w is the angular
+    // frequency
+    float t = usecs / 1000.0;
+    float omega = ANGULAR_FREQUENCY;
+    float scale = 1.0 + (1.0/2.0) * sin(omega * t);
+
+    glScalef(scale, scale, scale);
+
     // update camera position and axis
     this->updateCamPosition();
     this->updateCamLookat();

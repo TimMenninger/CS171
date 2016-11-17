@@ -34,7 +34,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@ $(LIBS)
 
 clean:
-	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/$(TARGETS)
+	rm -f $(OBJ_DIR)/*.o $(TARGETS)
 
 again: clean all
 
