@@ -24,18 +24,11 @@
 #include <thread>
 #include <mutex>
 
-#ifdef __APPLE__
-    #include <OpenGL/glext.h>
-    #include <OpenGL/gl.h>
-    #include <OpenGL/glu.h>
-    #include <GLUT/glut.h>
-#else
-    #include <GL/glew.h>
-    #include <GL/glut.h>
-    #include <GL/gl.h>
-    #include <GL/glu.h>
-    #include <GL/glext.h>
-#endif
+#include <GL/glew.h>
+#include <GL/glut.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glext.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>

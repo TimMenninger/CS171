@@ -7,7 +7,7 @@
 #include "model.hpp"
 
 Scene::Scene() : light_ids(), objects() {
-    //
+    this->begin = clock();
 }
 
 Scene::~Scene() {
@@ -43,4 +43,19 @@ void Scene::addSceneObject(
 {
     DEBUG_assert(model_id != k_invalid_index);
     this->objects.push_back({model_id, position, rotation, scale});
+}
+
+//
+// Scene::elapsedUsecs
+//
+// Returns the amount of time since the start of this program.
+//
+// Arguments: None.
+// Returns:   (int) - Number of microseconds since program start
+//
+// Revisions: 11/15/16 - Tim Menninger: Created
+//
+int Scene::elapsedUsecs() {
+    // Return usecs since last function call
+    return double(clock() - this->begin) * 1000000 / CLOCKS_PER_SEC;
 }
