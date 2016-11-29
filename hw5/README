@@ -1,0 +1,11 @@
+This is made with a simple "make" and is run as described in the homework.
+
+Explanation of thought process for part 2 can be found in file header on
+src/laplace.cpp
+
+It was sorta unclear whether you wanted the timestep to work such that each
+step is the same, and on each step we update the object, or if we keep an
+original copy of the object and just render a smoother object, doubling the
+timestep each time (as in the movie).  I did the latter, although I don't think
+it matters since if you understand one you understand the other (in fact,
+I originally did the other way until I saw something in the lecture notes).

@@ -1,5 +1,5 @@
 /* By Kevin (Kevli) Li (Class of 2016)
- * 
+ *
  * This header file contains a quick and dirty implementation of the Halfedge
  * data structure for the purpose of processing meshes WITHOUT boundary.
  *
@@ -17,7 +17,7 @@
  *     build_HE(Mesh_Data *mesh,
  *              std::vector<HEV*> *hevs,
  *              std::vector<HEF*> *hefs);
- * 
+ *
  * This function constructs the halfedge data structure and takes in three
  * arguments:
  *
@@ -126,15 +126,12 @@
 
 struct HE // HE for halfedge
 {
-    // the vertex that this halfedge comes out off
+    // the vertex that this halfedge comes out of
     struct HEV *vertex;
     // the face adjacent to this halfedge
     struct HEF *face;
     // the flip and next halfedge as described in the lecture notes
     struct HE *flip, *next;
-
-    // we omit the pointer to the adjacent edge (as well as a "halfedge edge"
-    // struct) because it is not necessary for the assignment
 };
 
 struct HEF // HEF for halfedge face
@@ -150,6 +147,7 @@ struct HEV // HEV for halfedge vertex
 {
     // the coordinates of the vertex in the mesh
     double x, y, z;
+
     // the halfedge going out off this vertex
     struct HE *out;
     // use this to store your index for this vertex when you index the vertices
@@ -157,6 +155,10 @@ struct HEV // HEV for halfedge vertex
     int index;
     // you can use this to store the normal vector for the vertex
     Vec3f normal;
+
+    Vec3f toVec3f() {
+        return Vec3f(x, y, z);
+    }
 };
 
 /* After this point, the comments stop. You shouldn't really need to know the
@@ -225,7 +227,7 @@ static bool check_face(HEF *face)
         b3 = (face->edge->next->next != NULL) ? check_edge(face->edge->next->next) : 1;
     else
         b3 = 1;
-    
+
     return b1 && b2 && b3;
 }
 
@@ -245,7 +247,7 @@ static bool orient_flip_face(HE *edge)
         HEV *v1 = face->edge->vertex;
         HEV *v2 = face->edge->next->vertex;
         HEV *v3 = face->edge->next->next->vertex;
-        
+
         assert(v1 != v2 && v1 != v3 && v2 != v3);
 
         HE *e3 = face->edge;
@@ -271,7 +273,7 @@ static bool orient_flip_face(HE *edge)
 
         assert(face->edge->next->next->next == face->edge);
     }
-    
+
     face->oriented = 1;
 
     assert(check_flip(edge));
@@ -308,13 +310,14 @@ static bool build_HE(Mesh_Data *mesh,
         hev->y = vertices->at(i)->y;
         hev->z = vertices->at(i)->z;
         hev->out = NULL;
+        hev->index = i;
 
         hevs->push_back(hev);
     }
 
     HEF *first_face = NULL;
     int num_faces = faces->size();
-    
+
     for (int i = 0; i < num_faces; ++i)
     {
         Face *f = faces->at(i);
@@ -335,7 +338,7 @@ static bool build_HE(Mesh_Data *mesh,
         e1->face = hef;
         e2->face = hef;
         e3->face = hef;
-        
+
         e1->next = e2;
         e2->next = e3;
         e3->next = e1;
