@@ -1,5 +1,7 @@
 This is made with a simple "make" and is run as described in the homework.
 
+Use 'l' (as in Laplace) to smooth.
+
 Explanation of thought process for part 2 can be found in file header on
 src/laplace.cpp
 

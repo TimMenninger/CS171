@@ -3,7 +3,7 @@
 #
 # This is a template Makefile for OpenGL programs. Edit it however you find
 # convenient.
-# 
+#
 # The current version of this file should compile OpenGL programs just fine on
 # Debian-based Linux operating systems.
 #
@@ -12,7 +12,7 @@
 # can compile the OpenGL parts successfully.
 ###############################################################################
 CC = g++
-FLAGS = -g
+FLAGS = -std=c++11 -g
 
 INCLUDE = -I/usr/X11R6/include -I/usr/include/GL -I/usr/include
 LIBDIR = -L/usr/X11R6/lib -L/usr/local/lib
@@ -26,6 +26,6 @@ all: $(SOURCES)
 
 clean:
 	rm -f *.o $(EXENAME)
+	rm -rf *.dSYM
 
 .PHONY: all clean
-

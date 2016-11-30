@@ -15,8 +15,14 @@
  * spring pendulum file for details.
  */
 
-#include <GL/glew.h>
-#include <GL/glut.h>
+ #ifdef __APPLE__
+     #include <OpenGL/gl.h>
+     #include <OpenGL/glu.h>
+     #include <GLUT/glut.h>
+ #else
+     #include <GL/glew.h>
+     #include <GL/glut.h>
+ #endif
 
 #include <cmath>
 #include <cfloat>
@@ -24,34 +30,10 @@
 #include <sstream>
 #include <vector>
 
+#include "../spring_math.h"
+#include "../pendulum.h"
+
 using namespace std;
-
-struct Point
-{
-    float x;
-    float y;
-};
-
-struct Color
-{
-    float r;
-    float g;
-    float b;
-};
-
-struct Spring_Pendulum
-{
-    float m;
-    
-    float x;
-    float y;
-    
-    float px;
-    float py;
-    
-    float k;
-    float rl;
-};
 
 const float cam_position[] = {0, 0, 2};
 
@@ -67,8 +49,6 @@ const float diffuse_reflect[3] = {0.7, 0.2, 0.8};
 const float specular_reflect[3] = {1, 1, 1};
 const float shininess = 0.1;
 
-const float dt = 0.01;
-const float g = -9.8;
 float t = 0;
 
 const int max_num_points = 1000;
@@ -108,14 +88,14 @@ void init(void)
     glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_reflect);
     glMaterialfv(GL_FRONT, GL_SPECULAR, specular_reflect);
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
-    
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    
+
     glOrtho(left_param, right_param,
             bottom_param, top_param,
             near_param, far_param);
-    
+
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -123,9 +103,9 @@ void reshape(int width, int height)
 {
     height = (height == 0) ? 1 : height;
     width = (width == 0) ? 1 : width;
-    
+
     glViewport(0, 0, width, height);
-    
+
     glutPostRedisplay();
 }
 
@@ -135,15 +115,15 @@ void display(void)
     glLoadIdentity();
 
     glTranslatef(-cam_position[0], -cam_position[1], -cam_position[2]);
-    
+
     trace_path();
-    
+
     glEnable(GL_LIGHTING);
     draw_spring_pendulums();
     glDisable(GL_LIGHTING);
 
     draw_text();
-    
+
     glutSwapBuffers();
 }
 
@@ -161,108 +141,62 @@ float compute_lagrangian()
     float total = ke + pe;
     min_total = (total < min_total) ? total : min_total;
     max_total = (total > max_total) ? total : max_total;
-    
+
     return ke - pe;
 }
 
 void update_path()
-{    
+{
     if(path1.size() == max_num_points)
     {
         path1.erase(path1.begin());
         path2.erase(path2.begin());
-        
+
         path_colors1.erase(path_colors1.begin());
         path_colors2.erase(path_colors2.begin());
     }
-    
+
     Point point1;
     point1.x = m1.x;
     point1.y = m1.y;
-    
+
     Point point2;
     point2.x = m2.x;
     point2.y = m2.y;
-    
+
     float lagrangian_norm = abs(compute_lagrangian() / lagrangian_0);
     lagrangian_norm = (lagrangian_norm > 1.0) ? 1.0 : lagrangian_norm;
-    
+
     Color color1;
     color1.r = lagrangian_norm;
     color1.g = lagrangian_norm;
     color1.b = 1.0 - lagrangian_norm;
-    
+
     Color color2;
     color2.r = 1.0 - lagrangian_norm;
     color2.g = lagrangian_norm;
     color2.b = lagrangian_norm;
-    
+
     path1.push_back(point1);
     path_colors1.push_back(color1);
-    
+
     path2.push_back(point2);
     path_colors2.push_back(color2);
 }
 
 void update_pendulums()
 {
-    /******************************* TODO *******************************/
+    /* The double-pendulum system is treated like the sum of two one-pendulum
+       systems, so the total KE is the sum of each individual pendulum,
+       and similarly for total PE.  Thus, it is the same as what is documented
+       in single_spring_pendulum, but has more algebra (which Mathematica did
+       anyway).  The only difference is the x and y positions of the second
+       pendulum must have the positions of the first pendulum subtracted out.
 
-    /* Your task is to write some lines of code to update:
-     * 
-     *     m1.x
-     *     m1.y
-     *     m1.px
-     *     m1.py
-     *
-     *     m2.x
-     *     m2.y
-     *     m2.px
-     *     m2.py
-     *
-     * (not necessarily in that order)
-     * To start, you should write the continuous Lagrangian for the spring
-     * pendulum system. Then, you should write the discrete analog. From
-     * there, use the discrete Euler-Lagrangian equations to solve for
-     * the correct update rules.
-     *
-     * The variables that you'll need (in addition to the above-listed
-     * ones) are:
-     *
-     *     dt
-     *     m1.m
-     *     m1.k
-     *     m1.rl
-     *     m2.m
-     *     m2.k
-     *     m2.rl
-     *     g
-     * 
+       Refer to ../spring_math.h for Mathematica C outputs, which fills global
+       variables for values at time k+1
      */
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    /****************************** END TODO ****************************/
+    computeDouble(&m1, &m2);
 
     t += dt;
 }
@@ -271,7 +205,7 @@ void update()
 {
     update_path();
     update_pendulums();
-    
+
     glutPostRedisplay();
 }
 
@@ -280,7 +214,7 @@ void trace_path()
     glVertexPointer(2, GL_FLOAT, 0, &path1[0]);
     glColorPointer(3, GL_FLOAT, 0, &path_colors1[0]);
     glDrawArrays(GL_POINTS, 0, path1.size());
-    
+
     glVertexPointer(2, GL_FLOAT, 0, &path2[0]);
     glColorPointer(3, GL_FLOAT, 0, &path_colors2[0]);
     glDrawArrays(GL_POINTS, 0, path2.size());
@@ -292,7 +226,7 @@ void draw_spring_pendulums()
     glVertex2f(0, 0);
     glVertex2f(m1.x, m1.y);
     glEnd();
-    
+
     glBegin(GL_LINES);
     glVertex2f(m1.x, m1.y);
     glVertex2f(m2.x, m2.y);
@@ -300,14 +234,14 @@ void draw_spring_pendulums()
 
     float pendulum_radius = 0.3;
     glutSolidSphere(pendulum_radius * 0.5, 20, 20);
-    
+
     glPushMatrix();
     {
         glTranslatef(m1.x, m1.y, 0);
         glutSolidSphere(pendulum_radius, 20, 20);
     }
     glPopMatrix();
-    
+
     glPushMatrix();
     {
         glTranslatef(m2.x, m2.y, 0);
@@ -375,10 +309,10 @@ int main(int argc, char* argv[])
         cerr << "\nERROR: Incorrect number of arguments." << endl;
         exit(1);
     }
-    
+
     int xres = atoi(argv[1]);
     int yres = atoi(argv[2]);
-    
+
     m1.m = 1;
     m1.x = atof(argv[3]);
     m1.y = atof(argv[4]);
@@ -386,7 +320,7 @@ int main(int argc, char* argv[])
     m1.py = 0;
     m1.k = 20;
     m1.rl = 1;
-    
+
     m2.m = 1;
     m2.x = atof(argv[5]);
     m2.y = atof(argv[6]);
@@ -394,15 +328,15 @@ int main(int argc, char* argv[])
     m2.py = 0;
     m2.k = 20;
     m2.rl = 1;
-    
+
     lagrangian_0 = compute_lagrangian();
-    
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(xres, yres);
     glutInitWindowPosition(0, 0);
     glutCreateWindow("Double Spring Pendulum");
-    
+
     init();
     glutDisplayFunc(display);
     glutIdleFunc(update);

@@ -6,7 +6,7 @@
 # Tim Menninger
 ###############################################################################
 CC = g++
-FLAGS = -g -o
+FLAGS = -std=c++11 -g -o
 
 INCLUDE = -I/usr/X11R6/include -I/usr/include/GL -I/usr/include -Ilib/
 LIBDIR = -L/usr/X11R6/lib -L/usr/local/lib
