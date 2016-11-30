@@ -1,55 +1,14 @@
 /******************************************************************************
 
- parseScene.h
+ scene.h
 
- Contains public function declarations from parseScene.cpp.  Much of this was
- adapted from the opengl demo code supplied by CS/CNS 171 this Fall, 2016.
+ Structs that help describe a scene
 
  Author: Tim Menninger
 
 ******************************************************************************/
-
-
-#include <map>
-
-#include <Eigen/Dense>
-
-#include "objParser.h"
-#include "utils.h"
-#include "halfedge.h"
-
-#define OBJ_DIR "data/"
-
-#ifndef PARSESCENE
-#define PARSESCENE
-
-/* You will almost always want to include the math library. For those that do
- * not know, the '_USE_MATH_DEFINES' line allows you to use the syntax 'M_PI'
- * to represent pi to double precision in C++. OpenGL works in degrees for
- * angles, so converting between degrees and radians is a common task when
- * working in OpenGL.
- *
- * Besides the use of 'M_PI', the trigometric functions also show up a lot in
- * graphics computations.
- */
-#include <math.h>
-#define _USE_MATH_DEFINES
-
-/* iostream and vector are standard libraries that are just generally useful.
- */
-#include <iostream>
-#include <vector>
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-/* The following structs do not involve OpenGL, but they are useful ways to
- * store information needed for rendering,
- *
- * After Assignment 2, the 3D shaded surface renderer assignment, you should
- * have a fairly intuitive understanding of what these structs represent.
- */
-
+#ifndef SCENE
+#define SCENE
 
 /* The following struct is used for representing a point light.
  *
@@ -106,7 +65,46 @@ struct Camera {
           top_param, bottom_param;
 };
 
-// Externally public functions
-int parseScene (char*, Camera*, std::vector<Point_Light>*, std::map<std::string, Object*>*, std::vector<Object>*);
+/* The following struct is used for storing a set of transformations.
+ * Please note that this structure assumes that our scenes will give
+ * sets of transformations in the form of transltion -> rotation -> scaling.
+ * Obviously this will not be the case for your scenes. Keep this in
+ * mind when writing your own programs.
+ *
+ * Note that we do not need to use matrices this time to represent the
+ * transformations. This is because OpenGL will handle all the matrix
+ * operations for us when we have it apply the transformations. All we
+ * need to do is supply the parameters.
+ */
+struct Transforms
+{
+    /* For each array below,
+     * Index 0 has the x-component
+     * Index 1 has the y-component
+     * Index 2 has the z-component
+     */
+    float translation[3];
+    float rotation[3];
+    float scaling[3];
 
-#endif // ifndef PARSESCENE
+    /* Angle in degrees.
+     */
+    float rotation_angle;
+
+    Transforms() {
+        translation[0] = 0;
+        translation[1] = 0;
+        translation[2] = 0;
+
+        rotation[0] = 0;
+        rotation[1] = 0;
+        rotation[2] = 0;
+        rotation_angle = 0;
+
+        scaling[0] = 1;
+        scaling[1] = 1;
+        scaling[2] = 1;
+    }
+};
+
+#endif

@@ -832,18 +832,18 @@ MatrixXd computeRotationQuaternion ()
 {
     // We need to first convert our points to NDC which is just scaling them
     // from (0, res) to (-1, 1).
-    double xNDC  = ((float) mouse_x / xres) - 1;
-    double yNDC  = ((float) mouse_y / yres) - 1;
-    double x0NDC = ((float) mouse_x0 / xres) - 1;
-    double y0NDC = ((float) mouse_y0 / yres) - 1;
+    double xNDC  = ((double) mouse_x / (double) xres) - 1.0;
+    double yNDC  = ((double) mouse_y / (double) yres) - 1.0;
+    double x0NDC = ((double) mouse_x0 / (double) xres) - 1.0;
+    double y0NDC = ((double) mouse_y0 / (double) yres) - 1.0;
 
     // We now want to estimate what the z coordinates are for each NDC point
-    double zNDC = 0;
-    if (xNDC*xNDC + yNDC*yNDC <= 1)
+    double zNDC = 0.0;
+    if (xNDC*xNDC + yNDC*yNDC <= 1.0)
         zNDC = sqrt(1 - xNDC*xNDC - yNDC*yNDC);
-    double z0NDC = 0;
-    if (x0NDC*x0NDC + y0NDC*y0NDC <= 1)
-        z0NDC = sqrt(1 - x0NDC*x0NDC - y0NDC*y0NDC);
+    double z0NDC = 0.0;
+    if (x0NDC*x0NDC + y0NDC*y0NDC <= 1.0)
+        z0NDC = sqrt(1.0 - x0NDC*x0NDC - y0NDC*y0NDC);
 
     // To compute theta, we must dot the two points in NDC and divide by the
     // product of their magnitudes.
@@ -855,7 +855,7 @@ MatrixXd computeRotationQuaternion ()
     // To compute our rotation matrix, we need a normalized vector u, which is
     // the cross product of our two points.  We will compute u component-wise.
     double uX = z0NDC * yNDC - y0NDC * zNDC;
-    double uY = x0NDC * zNDC - z0NDC * xNDC;
+    double uY = -1 * (z0NDC * xNDC - x0NDC * zNDC);
     double uZ = y0NDC * xNDC - x0NDC * yNDC;
     double magU = sqrt(uX*uX + uY*uY + uZ*uZ);
     uX /= magU;
@@ -870,9 +870,9 @@ MatrixXd computeRotationQuaternion ()
 
     // Using these, we can now generate our quaternion
     MatrixXd quat(4, 4);
-    quat << 1-2*(qY*qY-qZ*qZ),   2*(qX*qY-qZ*qS),   2*(qX*qZ+qY*qS), 0,
-              2*(qX*qY+qZ*qS), 1-2*(qX*qX-qZ*qZ),   2*(qY*qZ-qX*qS), 0,
-              2*(qX*qZ-qY*qS),   2*(qY*qZ+qX*qS), 1-2*(qX*qX-qY*qY), 0,
+    quat << 1-2*(qY*qY+qZ*qZ),   2*(qX*qY-qZ*qS),   2*(qX*qZ+qY*qS), 0,
+              2*(qX*qY+qZ*qS), 1-2*(qX*qX+qZ*qZ),   2*(qY*qZ-qX*qS), 0,
+              2*(qX*qZ-qY*qS),   2*(qY*qZ+qX*qS), 1-2*(qX*qX+qY*qY), 0,
                             0,                 0,                 0, 1;
 
     return quat;

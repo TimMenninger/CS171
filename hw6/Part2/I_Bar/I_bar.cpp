@@ -1,14 +1,14 @@
 /******************************************************************************
 
- smooth.cpp
+ I_bar.cpp
 
- Contains code for smoothing OBJ files.
+ Contains code for drawing I-bar animation
 
  Author: Tim Menninger
 
 ******************************************************************************/
 
-#include "smooth.h"
+#include "I_bar.h"
 
 using namespace std;
 using namespace Eigen;
@@ -19,7 +19,7 @@ void init_lights();
 
 // Relevant for displaying objects properly
 void set_lights();
-void draw_objects();
+void drawIBar();
 
 // Callback functions we supply to OpenGL
 void reshape(int width, int height);
@@ -34,7 +34,6 @@ void key_pressed(unsigned char key, int x, int y);
  */
 
 std::vector<Point_Light> lights;
-std::vector<Object> objects;
 // The camera view information
 Camera cam;
 // X and Y resolutions
@@ -57,6 +56,9 @@ float x_view_angle = 0, y_view_angle = 0;
 bool is_pressed = false;
 bool wireframe_mode = false;
 
+/* Needed to draw the cylinders using glu */
+GLUquadricObj *quadratic;
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,6 +70,8 @@ bool wireframe_mode = false;
  */
 void init(void)
 {
+    quadratic = gluNewQuadric();
+
     /* The following line of code tells OpenGL to use "smooth shading" (aka
      * Gouraud shading) when rendering.
      */
@@ -93,6 +97,9 @@ void init(void)
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
 
+    // Initialize camera values
+    initCamera(&cam);
+
     /* The next 4 lines work with OpenGL's two main matrices: the "Projection
      * Matrix" and the "Modelview Matrix".
      */
@@ -116,6 +123,8 @@ void init(void)
     // corresponds to our rotation being none yet
     currentRotation = MatrixXd::Identity(4, 4);
     lastRotation = MatrixXd::Identity(4, 4);
+
+    drawIBar();
 }
 
 /* 'reshape' function
@@ -203,7 +212,7 @@ void display(void)
     /* Once the lights are set, we can specify the points and faces that we
      * want drawn.
      */
-    draw_objects();
+    drawIBar();
 
     glutSwapBuffers();
 }
@@ -256,68 +265,51 @@ void set_lights()
     }
 }
 
-/* 'draw_objects' function:
+/* 'drawIBar' function:
  *
  * This function has OpenGL render our objects to the display screen. It
  */
-void draw_objects()
-{
-    int num_objects = objects.size();
+ void drawIBar()
+ {
+     /* Parameters for drawing the cylinders */
+     float cyRad = 0.2, cyHeight = 1.0;
+     int quadStacks = 4, quadSlices = 4;
 
-    for(int i = 0; i < num_objects; ++i)
-    {
-        glPushMatrix();
-        /* The following brace is not necessary, but it keeps things organized.
-         */
-        {
-            int num_transform_sets = objects[i].transform_sets.size();
+     glPushMatrix();
+     glColor3f(0, 0, 1);
+     glTranslatef(0, cyHeight, 0);
+     glRotatef(90, 1, 0, 0);
+     gluCylinder(quadratic, cyRad, cyRad, 2.0 * cyHeight, quadSlices, quadStacks);
+     glPopMatrix();
 
-            /* The loop tells OpenGL to modify our modelview matrix with the
-             * desired geometric transformations for this object.
-             */
-            for(int j = 0; j < num_transform_sets; ++j)
-            {
-                glTranslatef(objects[i].transform_sets[j].translation[0],
-                             objects[i].transform_sets[j].translation[1],
-                             objects[i].transform_sets[j].translation[2]);
-                glRotatef(objects[i].transform_sets[j].rotation_angle,
-                          objects[i].transform_sets[j].rotation[0],
-                          objects[i].transform_sets[j].rotation[1],
-                          objects[i].transform_sets[j].rotation[2]);
-                glScalef(objects[i].transform_sets[j].scaling[0],
-                         objects[i].transform_sets[j].scaling[1],
-                         objects[i].transform_sets[j].scaling[2]);
-            }
+     glPushMatrix();
+     glColor3f(0, 1, 1);
+     glTranslatef(0, cyHeight, 0);
+     glRotatef(90, 0, 1, 0);
+     gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
+     glPopMatrix();
 
-            /* The 'glMaterialfv' and 'glMaterialf' functions tell OpenGL
-             * the material properties of the surface we want to render.
-             */
-            glMaterialfv(GL_FRONT, GL_AMBIENT, objects[i].ambient_reflect);
-            glMaterialfv(GL_FRONT, GL_DIFFUSE, objects[i].diffuse_reflect);
-            glMaterialfv(GL_FRONT, GL_SPECULAR, objects[i].specular_reflect);
-            glMaterialf(GL_FRONT, GL_SHININESS, objects[i].shininess);
+     glPushMatrix();
+     glColor3f(1, 0, 1);
+     glTranslatef(0, cyHeight, 0);
+     glRotatef(-90, 0, 1, 0);
+     gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
+     glPopMatrix();
 
-            /* The next few lines of code are how we tell OpenGL to render
-             * geometry for us.
-             */
-            glVertexPointer(3, GL_FLOAT, 0, &objects[i].vertex_buffer[0]);
-            glNormalPointer(GL_FLOAT, 0, &objects[i].normal_buffer[0]);
+     glPushMatrix();
+     glColor3f(1, 1, 0);
+     glTranslatef(0, -cyHeight, 0);
+     glRotatef(-90, 0, 1, 0);
+     gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
+     glPopMatrix();
 
-            int buffer_size = objects[i].vertex_buffer.size();
-
-            if(!wireframe_mode)
-                /* Finally, we tell OpenGL to render everything with the
-                 * 'glDrawArrays' function.
-                 */
-                glDrawArrays(GL_TRIANGLES, 0, buffer_size);
-            else
-                for(int j = 0; j < buffer_size; j += 3)
-                    glDrawArrays(GL_LINE_LOOP, j, 3);
-        }
-
-        glPopMatrix();
-    }
-}
+     glPushMatrix();
+     glColor3f(0, 1, 0);
+     glTranslatef(0, -cyHeight, 0);
+     glRotatef(90, 0, 1, 0);
+     gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
+     glPopMatrix();
+ }
 
 /* 'mouse_pressed' function
  */
@@ -485,12 +477,9 @@ void key_pressed(unsigned char key, int x, int y)
          */
         glutPostRedisplay();
     }
-    else if(key == 'l')
+    else if(key == 'n')
     {
-        // Smooth the objects in the scene
-        smoothObjects(&objects, h);
-        // Double time step for next smoothing iteration
-        h *= 2.0;
+        // TODO: Next frame
 
         glutPostRedisplay();
     }
@@ -539,21 +528,19 @@ void key_pressed(unsigned char key, int x, int y)
  */
 int main(int argc, char* argv[])
 {
-    if (argc != 5) {
-        cout << "usage: ./smooth [scene_desc_file.txt] [xres] [yres] [h]"
-             << endl << "    scene_desc_file.txt: describes the scene"
+    if (argc != 4) {
+        cout << "usage: ./ibar [frames.script] [xres] [yres]"
+             << endl << "    frames.script: the frames in the movie"
              << endl << "    xres: x resolution"
              << endl << "    yres: y resolution"
-             << endl << "    h: time step"
              << endl;
         return 1;
     }
     xres = atoi(argv[2]);
     yres = atoi(argv[3]);
-    h    = (double) atof(argv[4]);
 
-    map< string, Object* > originals;
-    if (parseScene(argv[1], &cam, &lights, &originals, &objects))
+    Movie movie;
+    if (importMovie(argv[1], &movie))
         // If returns nonzero, there was an error
         return 1;
 
@@ -580,7 +567,7 @@ int main(int argc, char* argv[])
     glutInitWindowPosition(0, 0);
     /* The following line tells OpenGL to name the program window "Test".
      */
-    glutCreateWindow("OpenGL");
+    glutCreateWindow("I-Bar");
 
     /* Call our 'init' function...
      */

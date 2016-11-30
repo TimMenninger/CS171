@@ -9,9 +9,9 @@
 
 ******************************************************************************/
 
-/* The following 2 headers contain all the main functions, data structures, and
- * variables that allow for OpenGL development.
- */
+#ifndef PARSESCENE
+#define PARSESCENE
+
 #ifdef __APPLE__
     #include <OpenGL/gl.h>
     #include <OpenGL/glu.h>
@@ -46,8 +46,6 @@
 #include <iostream>
 #include <vector>
 
-#ifndef PARSESCENE
-#define PARSESCENE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
