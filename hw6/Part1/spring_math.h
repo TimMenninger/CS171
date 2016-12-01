@@ -87,37 +87,67 @@ static void computeDouble(Spring_Pendulum *sp1, Spring_Pendulum *sp2) {
 
     // Mass 1 momentum at time k+1 in x direction
     sp1->px = P1X + dt*(k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))) -
-        (k2*(x1k - x2k)*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/
-        Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)));
+      (k2*(x1k - x2k)*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k +
+             Power(x2k,2) + Power(y1k - y2k,2))))/
+       Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)));
 
     // Mass 1 momentum at time k+1 in y direction
-    sp1->py = dt*g*m1 + P1Y - dt*k1*y1k - dt*k2*y1k + (dt*k1*l1*y1k)/Sqrt(Power(x1k,2) + Power(y1k,2)) +
-        (dt*k2*l2*y1k)/Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)) + dt*k2*y2k -
-        (dt*k2*l2*y2k)/Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2));
+    sp1->py = dt*g*m1 + P1Y - dt*k1*y1k - dt*k2*y1k +
+   (dt*k1*l1*y1k)/Sqrt(Power(x1k,2) + Power(y1k,2)) +
+   (dt*k2*l2*y1k)/
+    Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)) +
+   dt*k2*y2k - (dt*k2*l2*y2k)/
+    Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2));
 
     // Mass 2 momentum at time k+1 in x direction
-    sp2->px = P2X + (dt*k2*(x1k - x2k)*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/
-        Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2));
+    sp2->px = P2X + (dt*k2*(x1k - x2k)*(-l2 +
+        Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))
+        ))/Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) +
+      Power(y1k - y2k,2));
 
     // Mass 2 momentum at time k+1 in y direction
-    sp2->py = P2Y + dt*(g*m2 + (k2*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)))*(y1k - y2k))/
-        Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)));
+    sp2->py = P2Y + dt*(g*m2 + (k2*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k +
+             Power(x2k,2) + Power(y1k - y2k,2)))*(y1k - y2k))/
+       Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)));
 
     // Mass 1 x positiong at time k+1
-    sp1->x = (dt*(P1X + P2X) + m1*x1k + Power(dt,2)*k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))))/m1;
+    sp1->x = (dt*(P1X + P2X) + (m1)*x1k +
+     Power(dt,2)*k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))))/
+   (m1);
 
     // Mass 1 y positiong at time k+1
-    sp1->y = ((dt*(P1Y + P2Y)) + m1*y1k + Power(dt,2)*(g*(m1 + m2) + k1*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2)))))/m1;
+    sp1->y = (dt*(P1Y + P2Y) + (m1)*y1k +
+     Power(dt,2)*(g*(m1 + m2) +
+        k1*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2)))))/(m1);
 
     // Mass 2 x positiong at time k+1
-    sp2->x = ((dt*(m1*P2X + m2*(P1X + P2X)) + m1*m2*x2k + Power(dt,2)*(k1*m2*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))) -
-        (k2*m1*(x1k - x2k)*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/
-        Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/(m1*m2));
+    sp2->x = (Power(dt,2)*(k2*(m1)*(x1k - x2k)*Sqrt(Power(x1k,2) + Power(y1k,2))*
+         (-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) +
+             Power(y1k - y2k,2))) +
+        k1*m2*x1k*(l1 - Sqrt(Power(x1k,2) + Power(y1k,2)))*
+         Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) +
+           Power(y1k - y2k,2))) +
+     dt*(m1*P2X + m2*(P1X + 2*P2X))*Sqrt(Power(x1k,2) + Power(y1k,2))*
+      Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))\
+      + m2*(m1)*x2k*Sqrt(Power(x1k,2) + Power(y1k,2))*
+      Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)))/
+   (m2*(m1)*Sqrt(Power(x1k,2) + Power(y1k,2))*
+     Sqrt(Power(x1k - x2k,2) + Power(y1k - y2k,2)));
 
     // Mass 2 y positiong at time k+1
-    sp2->y = ((dt*(m1*P2Y + m2*(P1Y + P2Y))) + Power(dt,2)*(g*m2*(2*m1 + m2) + k1*m2*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))) +
-        (k2*m1*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)))*(y1k - y2k))/
-        Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))) + m1*m2*y2k)/(m1*m2);
+    sp2->y = (Power(dt,2)*(m2*(2*g*(m1 + m2)*Sqrt(Power(x1k,2) + Power(y1k,2)) +
+           k1*y1k*(l1 - Sqrt(Power(x1k,2) + Power(y1k,2))))*
+         Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) +
+           Power(y1k - y2k,2)) +
+        k2*(m1)*Sqrt(Power(x1k,2) + Power(y1k,2))*
+         (-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) +
+             Power(y1k - y2k,2)))*(y1k - y2k)) +
+     dt*(m1*P2Y + m2*(P1Y + 2*P2Y))*Sqrt(Power(x1k,2) + Power(y1k,2))*
+      Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))\
+      + m2*(m1)*Sqrt(Power(x1k,2) + Power(y1k,2))*
+      Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))*
+      y2k)/(m2*(m1)*Sqrt(Power(x1k,2) + Power(y1k,2))*
+     Sqrt(Power(x1k - x2k,2) + Power(y1k - y2k,2)));
 }
 
 // Function to compute unknowns (anything with a 1 at the end) for single
