@@ -3,8 +3,8 @@
  double spring pendulum problem.  No effort was made to prettify this code.
 */
 
-#ifndef DOUBLE_SPRING
-#define DOUBLE_SPRING
+#ifndef SPRING_MATH
+#define SPRING_MATH
 
 #include <math.h>
 
@@ -58,85 +58,85 @@ static float Power(float base, float exponent) {
 }
 
 // Populate global values
-static void populateFromM1(Spring_Pendulum *m) {
-    x1k = m.x;
-    y1k = m.y;
-    m1  = m.m;
-    k1  = m.k;
-    l1  = m.rl;
-    P1X = m.px;
-    P1Y = m.py;
+static void populateFromM1(Spring_Pendulum *sp) {
+    x1k = sp->x;
+    y1k = sp->y;
+    m1  = sp->m;
+    k1  = sp->k;
+    l1  = sp->rl;
+    P1X = sp->px;
+    P1Y = sp->py;
 }
-static void populateFromM2(Spring_Pendulum *m1, Spring_Pendulum *m2) {
-    populateFromM1(m1);
-    x2k = m2.x;
-    y2k = m2.y;
-    m2  = m2.m;
-    k2  = m2.k;
-    l2  = m2.rl;
-    P2X = m2.px;
-    P2Y = m2.py;
+static void populateFromM2(Spring_Pendulum *sp) {
+    x2k = sp->x;
+    y2k = sp->y;
+    m2  = sp->m;
+    k2  = sp->k;
+    l2  = sp->rl;
+    P2X = sp->px;
+    P2Y = sp->py;
 }
 
 // Function to compute unknowns (anything with a 1 at the end) for double
 // spring pendulum system
-static void computeDouble(Spring_Pendulum *m1, Spring_Pendulum *m2) {
+static void computeDouble(Spring_Pendulum *sp1, Spring_Pendulum *sp2) {
     // Populate based on m1 and m2
-    populateFromM1(m1);
-    populateFromM2(m2);
+    populateFromM1(sp1);
+    populateFromM2(sp2);
+    m1 = m1 + m2;
 
     // Mass 1 momentum at time k+1 in x direction
-    m1->px = -P1X + dt*(k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))) -
+    sp1->px = P1X + dt*(k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))) -
         (k2*(x1k - x2k)*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/
         Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)));
 
     // Mass 1 momentum at time k+1 in y direction
-    m1->py = dt*g*m1 - P1Y - dt*k1*y1k - dt*k2*y1k + (dt*k1*l1*y1k)/Sqrt(Power(x1k,2) + Power(y1k,2)) +
+    sp1->py = dt*g*m1 + P1Y - dt*k1*y1k - dt*k2*y1k + (dt*k1*l1*y1k)/Sqrt(Power(x1k,2) + Power(y1k,2)) +
         (dt*k2*l2*y1k)/Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)) + dt*k2*y2k -
         (dt*k2*l2*y2k)/Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2));
 
     // Mass 2 momentum at time k+1 in x direction
-    m2->px = -P2X + (dt*k2*(x1k - x2k)*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/
+    sp2->px = P2X + (dt*k2*(x1k - x2k)*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/
         Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2));
 
     // Mass 2 momentum at time k+1 in y direction
-    m2->py = -P2Y + dt*(g*m2 + (k2*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)))*(y1k - y2k))/
+    sp2->py = P2Y + dt*(g*m2 + (k2*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)))*(y1k - y2k))/
         Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)));
 
     // Mass 1 x positiong at time k+1
-    m1->x = -((dt*(P1X + P2X) - m1*x1k + Power(dt,2)*k1*x1k*(1 - l1/Sqrt(Power(x1k,2) + Power(y1k,2))))/m1);
+    sp1->x = (dt*(P1X + P2X) + m1*x1k + Power(dt,2)*k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))))/m1;
 
     // Mass 1 y positiong at time k+1
-    m1->y = (-(dt*(P1Y + P2Y)) + m1*y1k + Power(dt,2)*(g*(m1 + m2) + k1*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2)))))/m1;
+    sp1->y = ((dt*(P1Y + P2Y)) + m1*y1k + Power(dt,2)*(g*(m1 + m2) + k1*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2)))))/m1;
 
     // Mass 2 x positiong at time k+1
-    m2->x = -((dt*(m1*P2X + m2*(P1X + P2X)) - m1*m2*x2k + Power(dt,2)*(k1*m2*x1k*(1 - l1/Sqrt(Power(x1k,2) + Power(y1k,2))) -
+    sp2->x = ((dt*(m1*P2X + m2*(P1X + P2X)) + m1*m2*x2k + Power(dt,2)*(k1*m2*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))) -
         (k2*m1*(x1k - x2k)*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/
         Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))))/(m1*m2));
 
     // Mass 2 y positiong at time k+1
-    m2->y = (-(dt*(m1*P2Y + m2*(P1Y + P2Y))) + Power(dt,2)*(g*m2*(2*m1 + m2) + k1*m2*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))) +
+    sp2->y = ((dt*(m1*P2Y + m2*(P1Y + P2Y))) + Power(dt,2)*(g*m2*(2*m1 + m2) + k1*m2*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))) +
         (k2*m1*(-l2 + Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2)))*(y1k - y2k))/
         Sqrt(Power(x1k,2) - 2*x1k*x2k + Power(x2k,2) + Power(y1k - y2k,2))) + m1*m2*y2k)/(m1*m2);
 }
 
 // Function to compute unknowns (anything with a 1 at the end) for single
 // spring pendulum system
-static void computeSingle(Spring_Pendulum *m1) {
+static void computeSingle(Spring_Pendulum *sp1) {
     // Populate based on m1
-    populateFromM1(m1);
+    populateFromM1(sp1);
 
     // Momentum in x direction at time k+1
-    m1->px = -P1X + dt*k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2)));
+    sp1->px = P1X + dt*k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2)));
 
     // Momentum in y direction at time k+1
-    m1->y1 = -P1Y + dt*(g*m1 + k1*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))));
+    sp1->py = P1Y + dt*(g*m1 + k1*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))));
 
     // Mass x position at time k+1
-    m1->x = -((dt*P1X - m1*x1k + Power(dt,2)*k1*x1k*(1 - l1/Sqrt(Power(x1k,2) + Power(y1k,2))))/m1);
+    sp1->x = (dt*P1X + m1*x1k + Power(dt,2)*k1*x1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2))))/m1;
 
     // Mass y position at time k+1
-    m1->y = (-(dt*P1Y) + m1*y1k + Power(dt,2)*(g*m1 + k1*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2)))))/m1;
+    sp1->y = (dt*P1Y + m1*y1k + Power(dt,2)*(g*m1 + k1*y1k*(-1 + l1/Sqrt(Power(x1k,2) + Power(y1k,2)))))/m1;
 }
 
-#endif // ifndef DOUBLE_SPRING
+#endif // ifndef SPRING_MATH

@@ -50,10 +50,6 @@ const float diffuse_reflect[3] = {0.7, 0.2, 0.8};
 const float specular_reflect[3] = {1, 1, 1};
 const float shininess = 0.1;
 
-/* Time step and gravity constant for simulation */
-const float dt = 0.01; // our time step
-const float g = -9.8; // acceleration of gravity
-
 /* Keeps track of total time of simulation */
 float t = 0;
 
@@ -68,7 +64,7 @@ float min_total = FLT_MAX, max_total = -FLT_MAX;
 float lagrangian_0;
 
 /* Our pendulum */
-Spring_Pendulum m1;
+Spring_Pendulum sp1;
 
 /* For drawing the path of the pendulum over time */
 vector<Point> path1;
@@ -150,10 +146,10 @@ void display(void)
  * values for coloring the traced path and for displaying on the screen */
 float compute_lagrangian()
 {
-    ke = 1.0 / 2.0 * m1.m * ((m1.px / m1.m) * (m1.px / m1.m) + (m1.py / m1.m) * (m1.py / m1.m));
-    pe = 1.0 / 2.0 * m1.k * (sqrt(m1.x * m1.x + m1.y * m1.y) - m1.rl) *
-                                  (sqrt(m1.x * m1.x + m1.y * m1.y) - m1.rl)
-         - m1.m * g * m1.y;
+    ke = 1.0 / 2.0 * sp1.m * ((sp1.px / sp1.m) * (sp1.px / sp1.m) + (sp1.py / sp1.m) * (sp1.py / sp1.m));
+    pe = 1.0 / 2.0 * sp1.k * (sqrt(sp1.x * sp1.x + sp1.y * sp1.y) - sp1.rl) *
+                                  (sqrt(sp1.x * sp1.x + sp1.y * sp1.y) - sp1.rl)
+         - sp1.m * g * sp1.y;
 
     float total = ke + pe;
     min_total = (total < min_total) ? total : min_total;
@@ -175,8 +171,8 @@ void update_path()
 
     // Make new point
     Point point1;
-    point1.x = m1.x;
-    point1.y = m1.y;
+    point1.x = sp1.x;
+    point1.y = sp1.y;
 
     // Compute a "normalized" Lagrangian value by dividing the current Lagrangian
     // by the initial value of the Lagrangian; this isn't exactly a normalization,
@@ -196,13 +192,6 @@ void update_path()
 
 void update_pendulum()
 {
-    // Shorthand
-    x1k = m1.x;
-    y1k = m1.y;
-    m1  = m1.m;
-    k1  = m1.k;
-    l1  = m1.rl;
-
     /* Using the discrete Lagrangian and the DELs given in the homework prompt,
      * we can compute the derivatives to get values for the momentum at times
      * k and k+1, in both the x and y directions, with our unknowns being
@@ -222,7 +211,7 @@ void update_pendulum()
      * I trust it more to have not made small mistakes such as copying wrong
      * or forgetting negatives.  This can be found in ../spring_math.h
      */
-    computeSingle(&m1);
+    computeSingle(&sp1);
 
     // Update time
     t += dt;
@@ -251,7 +240,7 @@ void draw_spring_pendulum()
     // Draws line connecting anchor point and pendulum bob
     glBegin(GL_LINES);
     glVertex2f(0, 0);
-    glVertex2f(m1.x, m1.y);
+    glVertex2f(sp1.x, sp1.y);
     glEnd();
 
     float pendulum_radius = 0.3;
@@ -262,7 +251,7 @@ void draw_spring_pendulum()
     // Draw pendulum bob in correct position
     glPushMatrix();
     {
-        glTranslatef(m1.x, m1.y, 0);
+        glTranslatef(sp1.x, sp1.y, 0);
         glutSolidSphere(pendulum_radius, 20, 20);
     }
     glPopMatrix();
@@ -342,21 +331,21 @@ int main(int argc, char* argv[])
     int yres = atoi(argv[2]);
 
     // Set mass to 1 for simplicity
-    m1.m = 1;
+    sp1.m = 1;
 
     // Initial position of pendulum bob is given by command line arguments
-    m1.x = atof(argv[3]);
-    m1.y = atof(argv[4]);
+    sp1.x = atof(argv[3]);
+    sp1.y = atof(argv[4]);
 
     // No velocity in the beginning
-    m1.px = 0;
-    m1.py = 0;
+    sp1.px = 0;
+    sp1.py = 0;
 
     // Arbitrary spring constant
-    m1.k = 20;
+    sp1.k = 20;
 
     // Set rest length to 1 for simplicity
-    m1.rl = 1;
+    sp1.rl = 1;
 
     // Set initial Lagrangian value for generating the color effect of the
     // pendulum's path

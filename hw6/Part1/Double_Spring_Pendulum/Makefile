@@ -12,7 +12,7 @@
 # can compile the OpenGL parts successfully.
 ###############################################################################
 CC = g++
-FLAGS = std=c++11 -g
+FLAGS = -std=c++11 -g
 
 INCLUDE = -I/usr/X11R6/include -I/usr/include/GL -I/usr/include
 LIBDIR = -L/usr/X11R6/lib -L/usr/local/lib

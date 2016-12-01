@@ -15,10 +15,8 @@ using namespace Eigen;
 
 // Initialization functions for OpenGL display
 void init(void);
-void init_lights();
 
 // Relevant for displaying objects properly
-void set_lights();
 void drawIBar();
 
 // Callback functions we supply to OpenGL
@@ -33,7 +31,6 @@ void key_pressed(unsigned char key, int x, int y);
 /* Self-explanatory lists of lights and objects.
  */
 
-std::vector<Point_Light> lights;
 // The camera view information
 Camera cam;
 // X and Y resolutions

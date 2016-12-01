@@ -58,8 +58,8 @@ float min_total = FLT_MAX, max_total = -FLT_MAX;
 
 float lagrangian_0;
 
-Spring_Pendulum m1;
-Spring_Pendulum m2;
+Spring_Pendulum sp1;
+Spring_Pendulum sp2;
 
 vector<Point> path1;
 vector<Point> path2;
@@ -129,14 +129,14 @@ void display(void)
 
 float compute_lagrangian()
 {
-    ke = 1.0 / 2.0 * m1.m * ((m1.px / m1.m) * (m1.px / m1.m) + (m1.py / m1.m) * (m1.py / m1.m))
-         + 1.0 / 2.0 * m2.m * ((m2.px / m2.m) * (m2.px / m2.m) + (m2.py / m2.m) * (m2.py / m2.m));
-    pe = 1.0 / 2.0 * m1.k * (sqrt(m1.x * m1.x + m1.y * m1.y) - m1.rl) *
-                                  (sqrt(m1.x * m1.x + m1.y * m1.y) - m1.rl)
-         + 1.0 / 2.0 * m2.k * (sqrt((m1.x - m2.x) * (m1.x - m2.x) + (m1.y - m2.y) * (m1.y - m2.y)) - m2.rl) *
-                                  (sqrt((m1.x - m2.x) * (m1.x - m2.x) + (m1.y - m2.y) * (m1.y - m2.y)) - m2.rl)
-         - m1.m * g * m1.y
-         - m2.m * g * m2.y;
+    ke = 1.0 / 2.0 * sp1.m * ((sp1.px / sp1.m) * (sp1.px / sp1.m) + (sp1.py / sp1.m) * (sp1.py / sp1.m))
+         + 1.0 / 2.0 * sp2.m * ((sp2.px / sp2.m) * (sp2.px / sp2.m) + (sp2.py / sp2.m) * (sp2.py / sp2.m));
+    pe = 1.0 / 2.0 * sp1.k * (sqrt(sp1.x * sp1.x + sp1.y * sp1.y) - sp1.rl) *
+                                  (sqrt(sp1.x * sp1.x + sp1.y * sp1.y) - sp1.rl)
+         + 1.0 / 2.0 * sp2.k * (sqrt((sp1.x - sp2.x) * (sp1.x - sp2.x) + (sp1.y - sp2.y) * (sp1.y - sp2.y)) - sp2.rl) *
+                                  (sqrt((sp1.x - sp2.x) * (sp1.x - sp2.x) + (sp1.y - sp2.y) * (sp1.y - sp2.y)) - sp2.rl)
+         - sp1.m * g * sp1.y
+         - sp2.m * g * sp2.y;
 
     float total = ke + pe;
     min_total = (total < min_total) ? total : min_total;
@@ -157,12 +157,12 @@ void update_path()
     }
 
     Point point1;
-    point1.x = m1.x;
-    point1.y = m1.y;
+    point1.x = sp1.x;
+    point1.y = sp1.y;
 
     Point point2;
-    point2.x = m2.x;
-    point2.y = m2.y;
+    point2.x = sp2.x;
+    point2.y = sp2.y;
 
     float lagrangian_norm = abs(compute_lagrangian() / lagrangian_0);
     lagrangian_norm = (lagrangian_norm > 1.0) ? 1.0 : lagrangian_norm;
@@ -196,7 +196,7 @@ void update_pendulums()
        Refer to ../spring_math.h for Mathematica C outputs, which fills global
        variables for values at time k+1
      */
-    computeDouble(&m1, &m2);
+    computeDouble(&sp1, &sp2);
 
     t += dt;
 }
@@ -224,12 +224,12 @@ void draw_spring_pendulums()
 {
     glBegin(GL_LINES);
     glVertex2f(0, 0);
-    glVertex2f(m1.x, m1.y);
+    glVertex2f(sp1.x, sp1.y);
     glEnd();
 
     glBegin(GL_LINES);
-    glVertex2f(m1.x, m1.y);
-    glVertex2f(m2.x, m2.y);
+    glVertex2f(sp1.x, sp1.y);
+    glVertex2f(sp2.x, sp2.y);
     glEnd();
 
     float pendulum_radius = 0.3;
@@ -237,14 +237,14 @@ void draw_spring_pendulums()
 
     glPushMatrix();
     {
-        glTranslatef(m1.x, m1.y, 0);
+        glTranslatef(sp1.x, sp1.y, 0);
         glutSolidSphere(pendulum_radius, 20, 20);
     }
     glPopMatrix();
 
     glPushMatrix();
     {
-        glTranslatef(m2.x, m2.y, 0);
+        glTranslatef(sp2.x, sp2.y, 0);
         glutSolidSphere(pendulum_radius, 20, 20);
     }
     glPopMatrix();
@@ -313,21 +313,21 @@ int main(int argc, char* argv[])
     int xres = atoi(argv[1]);
     int yres = atoi(argv[2]);
 
-    m1.m = 1;
-    m1.x = atof(argv[3]);
-    m1.y = atof(argv[4]);
-    m1.px = 0;
-    m1.py = 0;
-    m1.k = 20;
-    m1.rl = 1;
+    sp1.m = 1;
+    sp1.x = atof(argv[3]);
+    sp1.y = atof(argv[4]);
+    sp1.px = 0;
+    sp1.py = 0;
+    sp1.k = 20;
+    sp1.rl = 1;
 
-    m2.m = 1;
-    m2.x = atof(argv[5]);
-    m2.y = atof(argv[6]);
-    m2.px = 0;
-    m2.py = 0;
-    m2.k = 20;
-    m2.rl = 1;
+    sp2.m = 1;
+    sp2.x = atof(argv[5]);
+    sp2.y = atof(argv[6]);
+    sp2.px = 0;
+    sp2.py = 0;
+    sp2.k = 20;
+    sp2.rl = 1;
 
     lagrangian_0 = compute_lagrangian();
 

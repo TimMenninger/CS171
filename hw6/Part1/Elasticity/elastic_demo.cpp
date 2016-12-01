@@ -14,7 +14,7 @@
 /* Usual includes and namespaces */
 #include <GL/glew.h>
 #include <GL/glut.h>
-#include <Eigen/Dense>
+#include "Eigen/Dense"
 
 #include <cfloat>
 #include <cmath>
