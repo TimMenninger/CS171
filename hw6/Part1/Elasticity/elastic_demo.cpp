@@ -354,9 +354,9 @@ void display(void)
         float m = vertices[i].mass;
         float x = vertices[i].x, y = vertices[i].y;
         float fx = vertices[i].fx, fy = vertices[i].fy;
-        float px = m*x, py = m*y;
-        vertices[i].x  = dt / m * (px - fx*dt) + x;
-        vertices[i].y  = dt / m * (py - fy*dt) + y;
+        float px = m*vertices[i].vx, py = m*vertices[i].vy;
+        vertices[i].x  = dt * (px + (dt * fx / m)) + x;
+        vertices[i].y  = dt * (py + (dt * fy / m)) + y;
         vertices[i].vx = (vertices[i].x - x) / dt;
         vertices[i].vy = (vertices[i].y - y) / dt;
 

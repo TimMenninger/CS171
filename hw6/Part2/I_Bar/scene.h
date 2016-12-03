@@ -78,18 +78,19 @@ struct Camera {
  */
 struct Transforms
 {
+    /* NOTE: if changing this struct causes seg faults, refer to
+     * Movie::nextTransform function!
+     */
+
     /* For each array below,
      * Index 0 has the x-component
      * Index 1 has the y-component
      * Index 2 has the z-component
      */
     float translation[3];
-    float rotation[3];
     float scaling[3];
-
-    /* Angle in degrees.
-     */
-    float rotation_angle;
+    // Rotation quaternion [ s, x, y, z ]
+    float rotation[4];
 
     Transforms() {
         translation[0] = 0;
@@ -99,7 +100,7 @@ struct Transforms
         rotation[0] = 0;
         rotation[1] = 0;
         rotation[2] = 0;
-        rotation_angle = 0;
+        rotation[3] = 0;
 
         scaling[0] = 1;
         scaling[1] = 1;

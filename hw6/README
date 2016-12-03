@@ -1,0 +1,24 @@
+Part 1:
+I wasn't totally sure how to get the lighting in such a way that the I-bar
+was in color, but hopefully that wasn't too large a component of what we were
+to do... Press 'n' to go to the next frame.  Run it with
+
+    ./keyframe [script] [xres] [yres]
+
+as described in the 2016 CS171 HW6 prompt.
+
+
+Part 2:
+For whatever reason I thought it'd be cool to multi-thread it, so sorry if
+that degrades readability.  At the same time, hopefully it will improve runtime
+(although I wouldn't know as I haven't run it on one thread).  Anyway, to run
+this, go
+
+    ./interpolate < [info]
+
+where info is a file that describes what to do.  The format should have the
+output directory on line 1, the "base name", or what goes to the left of the
+frame number, on line 2, then the remaining lines should be lines with two
+elements: a keyframe and the frame in the movie that keyframe represents.
+These should be in chronological order.  For the bunny*.obj, I created
+keyframes.txt to run.

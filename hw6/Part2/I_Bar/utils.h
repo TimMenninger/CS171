@@ -13,9 +13,14 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <math.h>
+#include <iostream>
 
 #define PI 3.1415926
 
 std::vector<std::string> getSpaceDelimitedWords (std::string line);
+void rotationToQuaternion(float *rotation, float *quaternion);
+void quaternionToRotation(float *quaternion, float *rotation);
+
 
 #endif // ifndef UTILS

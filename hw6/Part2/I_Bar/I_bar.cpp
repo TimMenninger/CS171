@@ -18,6 +18,8 @@ void init(void);
 
 // Relevant for displaying objects properly
 void drawIBar();
+void init_lights();
+void set_lights();
 
 // Callback functions we supply to OpenGL
 void reshape(int width, int height);
@@ -31,12 +33,20 @@ void key_pressed(unsigned char key, int x, int y);
 /* Self-explanatory lists of lights and objects.
  */
 
+// THe movie containing all frames
+Movie *movie = NULL;
+
+// Lights in the system
+vector<Point_Light> lights;
 // The camera view information
 Camera cam;
 // X and Y resolutions
 int xres, yres;
 // Time step
 double h;
+
+// Current transform of the object on screen
+Transforms t;
 
 // Rotation matrices used for the ability to rotate the view
 MatrixXd currentRotation(4, 4);
@@ -51,7 +61,6 @@ const float x_view_step = 90.0, y_view_step = 90.0;
 float x_view_angle = 0, y_view_angle = 0;
 
 bool is_pressed = false;
-bool wireframe_mode = false;
 
 /* Needed to draw the cylinders using glu */
 GLUquadricObj *quadratic;
@@ -122,41 +131,6 @@ void init(void)
     lastRotation = MatrixXd::Identity(4, 4);
 
     drawIBar();
-}
-
-/* 'reshape' function
- */
-void reshape(int width, int height)
-{
-    /* The following two lines of code prevent the width and height of the
-     * window from ever becoming 0 to prevent divide by 0 errors later.
-     * Typically, we let 1x1 square pixel be the smallest size for the window.
-     */
-    height = (height == 0) ? 1 : height;
-    width = (width == 0) ? 1 : width;
-
-    /* The 'glViewport' function tells OpenGL to determine how to convert from
-     * NDC to screen coordinates given the dimensions of the window. The
-     * parameters for 'glViewport' are (in the following order):
-     *
-     * - int x: x-coordinate of the lower-left corner of the window in pixels
-     * - int y: y-coordinate of the lower-left corner of the window in pixels
-     * - int width: width of the window
-     * - int height: height of the window
-     */
-    glViewport(0, 0, width, height);
-
-    /* The following two lines are specific to updating our mouse interface
-     * parameters.
-     */
-    mouse_scale_x = (float) (cam.right_param - cam.left_param) / (float) width;
-    mouse_scale_y = (float) (cam.top_param - cam.bottom_param) / (float) height;
-
-    /* The following line tells OpenGL that our program window needs to
-     * be re-displayed, meaning everything that was being displayed on
-     * the window before it got resized needs to be re-rendered.
-     */
-    glutPostRedisplay();
 }
 
 /* 'display' function:
@@ -268,83 +242,59 @@ void set_lights()
  */
  void drawIBar()
  {
-     /* Parameters for drawing the cylinders */
-     float cyRad = 0.2, cyHeight = 1.0;
-     int quadStacks = 4, quadSlices = 4;
+     glTranslatef(t.translation[0],
+                  t.translation[1],
+                  t.translation[2]);
+     glScalef(t.scaling[0],
+              t.scaling[1],
+              t.scaling[2]);
 
-     glPushMatrix();
-     glColor3f(0, 0, 1);
-     glTranslatef(0, cyHeight, 0);
-     glRotatef(90, 1, 0, 0);
-     gluCylinder(quadratic, cyRad, cyRad, 2.0 * cyHeight, quadSlices, quadStacks);
-     glPopMatrix();
+    // Use quaternions to compute rotation
+    float rotation[4];
+    quaternionToRotation(t.rotation, rotation);
+    glRotatef(rotation[0] * 180 / PI,
+              rotation[1],
+              rotation[2],
+              rotation[3]);
 
-     glPushMatrix();
-     glColor3f(0, 1, 1);
-     glTranslatef(0, cyHeight, 0);
-     glRotatef(90, 0, 1, 0);
-     gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
-     glPopMatrix();
+    /* Parameters for drawing the cylinders */
+    float cyRad = 0.2, cyHeight = 1.0;
+    int quadStacks = 4, quadSlices = 4;
 
-     glPushMatrix();
-     glColor3f(1, 0, 1);
-     glTranslatef(0, cyHeight, 0);
-     glRotatef(-90, 0, 1, 0);
-     gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
-     glPopMatrix();
+    glPushMatrix();
+    glColor3f(0, 0, 1);
+    glTranslatef(0, cyHeight, 0);
+    glRotatef(90, 1, 0, 0);
+    gluCylinder(quadratic, cyRad, cyRad, 2.0 * cyHeight, quadSlices, quadStacks);
+    glPopMatrix();
 
-     glPushMatrix();
-     glColor3f(1, 1, 0);
-     glTranslatef(0, -cyHeight, 0);
-     glRotatef(-90, 0, 1, 0);
-     gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
-     glPopMatrix();
+    glPushMatrix();
+    glColor3f(0, 1, 1);
+    glTranslatef(0, cyHeight, 0);
+    glRotatef(90, 0, 1, 0);
+    gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
+    glPopMatrix();
 
-     glPushMatrix();
-     glColor3f(0, 1, 0);
-     glTranslatef(0, -cyHeight, 0);
-     glRotatef(90, 0, 1, 0);
-     gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
-     glPopMatrix();
- }
+    glPushMatrix();
+    glColor3f(1, 0, 1);
+    glTranslatef(0, cyHeight, 0);
+    glRotatef(-90, 0, 1, 0);
+    gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
+    glPopMatrix();
 
-/* 'mouse_pressed' function
- */
-void mouse_pressed(int button, int state, int x, int y)
-{
-    /* If the left-mouse button was clicked down, then...
-     */
-    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-    {
-        /* Store the mouse position in our global variables.
-         */
-        mouse_x = x;
-        mouse_y = y;
+    glPushMatrix();
+    glColor3f(1, 1, 0);
+    glTranslatef(0, -cyHeight, 0);
+    glRotatef(-90, 0, 1, 0);
+    gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
+    glPopMatrix();
 
-        /* Store the mouse position as the initial position, so we know how
-         * to rotate the scene if dragged.
-         */
-        mouse_x0 = x;
-        mouse_y0 = y;
-
-        /* Since the mouse is being pressed down, we set our 'is_pressed"
-         * boolean indicator to true.
-         */
-        is_pressed = true;
-    }
-    /* If the left-mouse button was released up, then...
-     */
-    else if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
-    {
-        // Record our rotation as the last rotation, and reset our current
-        // rotation for the next time we rotate the screen
-        lastRotation = currentRotation * lastRotation;
-        currentRotation = MatrixXd::Identity(4, 4);
-
-        /* Mouse is no longer being pressed, so set our indicator to false.
-         */
-        is_pressed = false;
-    }
+    glPushMatrix();
+    glColor3f(0, 1, 0);
+    glTranslatef(0, -cyHeight, 0);
+    glRotatef(90, 0, 1, 0);
+    gluCylinder(quadratic, cyRad, cyRad, cyHeight, quadSlices, quadStacks);
+    glPopMatrix();
 }
 
 /* 'computeRotationQuaternion' function:
@@ -402,57 +352,6 @@ MatrixXd computeRotationQuaternion ()
     return quat;
 }
 
-/* 'mouse_moved' function:
- *
- * This function is meant to respond to when the mouse is being moved. There
- * are just two parameters to this function:
- *
- * - int x: the x screen coordinate of where the mouse was clicked or released
- * - int y: the y screen coordinate of where the mouse was clicked or released
- *
- * We compute our camera rotation angles based on the mouse movement in this
- * function.
- */
-void mouse_moved(int x, int y)
-{
-    /* If the left-mouse button is being clicked down...
-     */
-    if(is_pressed)
-    {
-        x_view_angle += ((float) x - (float) mouse_x) * mouse_scale_x * x_view_step;
-        float temp_y_view_angle = y_view_angle +
-                                  ((float) y - (float) mouse_y) * mouse_scale_y * y_view_step;
-        y_view_angle = (temp_y_view_angle > 90 || temp_y_view_angle < -90) ?
-                       y_view_angle : temp_y_view_angle;
-
-        /* We update our 'mouse_x' and 'mouse_y' variables so that if the user moves
-         * the mouse again without releasing it, then the distance we compute on the
-         * next call to the 'mouse_moved' function will be from this current mouse
-         * position.
-         */
-        mouse_x = x;
-        mouse_y = y;
-
-        /* Compute how to change the image to reflect the changing of view
-         */
-        currentRotation = computeRotationQuaternion();
-
-        /* Tell OpenGL that it needs to re-render our scene with the new camera
-         * angles.
-         */
-        glutPostRedisplay();
-    }
-}
-
-/* 'deg2rad' function:
- *
- * Converts given angle in degrees to radians.
- */
-float deg2rad(float angle)
-{
-    return angle * M_PI / 180.0;
-}
-
 /* 'key_pressed' function
  */
 void key_pressed(unsigned char key, int x, int y)
@@ -466,56 +365,10 @@ void key_pressed(unsigned char key, int x, int y)
     /* If 't' is pressed, toggle our 'wireframe_mode' boolean to make OpenGL
      * render our cubes as surfaces of wireframes.
      */
-    else if(key == 't')
-    {
-        wireframe_mode = !wireframe_mode;
-        /* Tell OpenGL that it needs to re-render our scene with the cubes
-         * now as wireframes (or surfaces if they were wireframes before).
-         */
-        glutPostRedisplay();
-    }
     else if(key == 'n')
     {
-        // TODO: Next frame
-
+        movie->nextTransform(&t);
         glutPostRedisplay();
-    }
-    else
-    {
-        float x_view_rad = deg2rad(x_view_angle);
-
-        /* 'w' for step forward
-         */
-        if(key == 'w')
-        {
-            cam.cam_position[0] += step_size * sin(x_view_rad);
-            cam.cam_position[2] -= step_size * cos(x_view_rad);
-            glutPostRedisplay();
-        }
-        /* 'a' for step left
-         */
-        else if(key == 'a')
-        {
-            cam.cam_position[0] -= step_size * cos(x_view_rad);
-            cam.cam_position[2] -= step_size * sin(x_view_rad);
-            glutPostRedisplay();
-        }
-        /* 's' for step backward
-         */
-        else if(key == 's')
-        {
-            cam.cam_position[0] -= step_size * sin(x_view_rad);
-            cam.cam_position[2] += step_size * cos(x_view_rad);
-            glutPostRedisplay();
-        }
-        /* 'd' for step right
-         */
-        else if(key == 'd')
-        {
-            cam.cam_position[0] += step_size * cos(x_view_rad);
-            cam.cam_position[2] += step_size * sin(x_view_rad);
-            glutPostRedisplay();
-        }
     }
 }
 
@@ -526,7 +379,7 @@ void key_pressed(unsigned char key, int x, int y)
 int main(int argc, char* argv[])
 {
     if (argc != 4) {
-        cout << "usage: ./ibar [frames.script] [xres] [yres]"
+        cout << "usage: ./keyframe [frames.script] [xres] [yres]"
              << endl << "    frames.script: the frames in the movie"
              << endl << "    xres: x resolution"
              << endl << "    yres: y resolution"
@@ -536,10 +389,17 @@ int main(int argc, char* argv[])
     xres = atoi(argv[2]);
     yres = atoi(argv[3]);
 
-    Movie movie;
-    if (importMovie(argv[1], &movie))
+    // Put a light so we can see
+    Point_Light light;
+    initLight(&light);
+    lights.push_back(light);
+
+    movie = new Movie();
+    if (movie->import(argv[1]))
         // If returns nonzero, there was an error
         return 1;
+    // Use the first frame as the current transformation.
+    t = *(movie->firstFrame->t);
 
     /* 'glutInit' intializes the GLUT (Graphics Library Utility Toolkit) library.
      * This is necessary, since a lot of the functions we used above and below
@@ -572,15 +432,6 @@ int main(int argc, char* argv[])
     /* Specify to OpenGL our display function.
      */
     glutDisplayFunc(display);
-    /* Specify to OpenGL our reshape function.
-     */
-    glutReshapeFunc(reshape);
-    /* Specify to OpenGL our function for handling mouse presses.
-     */
-    glutMouseFunc(mouse_pressed);
-    /* Specify to OpenGL our function for handling mouse movement.
-     */
-    glutMotionFunc(mouse_moved);
     /* Specify to OpenGL our function for handling key presses.
      */
     glutKeyboardFunc(key_pressed);

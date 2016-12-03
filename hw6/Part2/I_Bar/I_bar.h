@@ -11,8 +11,10 @@
 #define IBAR
 
 #include <vector>
+#include <cmath>
 
 #include "movie.h"
+#include "utils.h"
 
 #ifdef __APPLE__
     #include <OpenGL/gl.h>
@@ -23,6 +25,19 @@
     #include <GL/glut.h>
 #endif
 
+// Light for the system
+static void initLight(Point_Light *light) {
+    light->position[0] = 0;
+    light->position[0] = 0;
+    light->position[0] = 40;
+    light->position[0] = 1;
+
+    light->color[0] = 1;
+    light->color[1] = 1;
+    light->color[2] = 1;
+
+    light->attenuation_k = 0.5;
+}
 // Camera used (hard coded, given from hw6 specs)
 static void initCamera(Camera *cam) {
     cam->cam_position[0] = 0;
