@@ -64,7 +64,7 @@ void Renderer::updateScene() {
 /* Initializes the renderer. */
 void Renderer::init() {
     // I (Nailen) needed this to get shaders to work
-    glewExperimental = GL_TRUE; 
+    glewExperimental = GL_TRUE;
     glewInit();
 
     // Set the background color and enable the depth buffer, backface culling
@@ -109,12 +109,12 @@ void Renderer::init() {
 void Renderer::initLights() {
     // Enable built-in lights
     glEnable(GL_LIGHTING);
-    
+
     // Loop through all the lights and bind their properties to OpenGL's lights
     for (uint i = 0; i < this->scene->lights.size(); i++) {
         GLint light_id = GL_LIGHT0 + i;
         glEnable(light_id);
-        
+
         glLightfv(light_id, GL_AMBIENT, this->scene->lights[i].color);
         glLightfv(light_id, GL_DIFFUSE, this->scene->lights[i].color);
         glLightfv(light_id, GL_SPECULAR, this->scene->lights[i].color);
@@ -193,14 +193,14 @@ void Renderer::drawPrimitive(Primitive *prm) {
     const float ambient = prm->getAmbient();
     const float diffuse = prm->getDiffuse();
     const float specular = prm->getSpecular();
-    float ambientColor[3] = {color.r * ambient, 
-                        color.g * ambient, 
+    float ambientColor[3] = {color.r * ambient,
+                        color.g * ambient,
                         color.b * ambient};
-    float diffuseColor[3] = {color.r * diffuse, 
-                        color.g * diffuse, 
+    float diffuseColor[3] = {color.r * diffuse,
+                        color.g * diffuse,
                         color.b * diffuse};
-    float specularColor[3] = {color.r * specular, 
-                        color.g * specular, 
+    float specularColor[3] = {color.r * specular,
+                        color.g * specular,
                         color.b * specular};
 
     // Set the built-in material properties
@@ -366,7 +366,7 @@ void Renderer::drawObject(Object* obj, int depth) {
     for (auto& child_it : obj->getChildren()) {
         glPushMatrix();
 
-        const vector<Transformation>& child_trans = 
+        const vector<Transformation>& child_trans =
             child_it.second.transformations;
         for (int i = child_trans.size() - 1; i >= 0; i--) {
             transform(child_trans.at(i));
@@ -511,7 +511,7 @@ void Renderer::display() {
     }
 
     renderer->drawAxes();
-    
+
     glPopMatrix();
 
     // Do the same for the objects and their matrix
@@ -533,7 +533,7 @@ void Renderer::display() {
         scene->normals.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
-    
+
     // Draw the .obj entities in the scene, then draw the primitives starting
     // from the end of the .obj data in the vertex buffers
 

@@ -1,6 +1,5 @@
 *.obj
 *.txt
 *.DS_Store
-*/Eigen/*
 *.dSYM/*
 

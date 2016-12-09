@@ -28,6 +28,6 @@ all: $(SOURCES)
 
 clean:
 	rm -f *.o $(EXENAME)
-	rm -r $(BIN)*.dSYM
+	rm -fr $(BIN)*.dSYM
 
 .PHONY: all clean
